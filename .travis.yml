@@ -18,6 +18,7 @@ matrix:
 
 install:
   - pip install -U pip
+  - pip install --upgrade setuptools
   - pip install -r requirements.txt
   - pip install -r requirements-dev.txt
 
