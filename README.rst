@@ -38,7 +38,7 @@ See `ConstantBackoff`_ for an implementation reference.
 Installation
 ------------
 
-Using ``pip`` package manager:
+Using ``pip`` package manager (requires pip 1.8+. Upgrade it running: ``pip install -U pip``):
 
 .. code-block:: bash
 
