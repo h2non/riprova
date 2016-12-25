@@ -1,4 +1,4 @@
-riprova |Build Status| |PyPI| |Coverage Status| |Documentation Status| |Stability| |Quality| |Versions|
+riprova |Build Status| |PyPI| |Coverage Status| |Documentation Status| |Quality| |Versions|
 =======================================================================================================
 
 Small, generic and versatile `Python`_ library providing retry mechanisms with multiple backoff strategies for failed operations.
