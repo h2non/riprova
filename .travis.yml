@@ -15,6 +15,7 @@ sudo: false
 matrix:
   allow_failures:
     - python: nightly
+    - python: pypy3
 
 install:
   - pip install -U pip
