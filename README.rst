@@ -1,9 +1,10 @@
 riprova |Build Status| |PyPI| |Coverage Status| |Documentation Status| |Quality| |Versions|
-=======================================================================================================
+===========================================================================================
 
-Small, generic and versatile `Python`_ library providing retry mechanisms with multiple backoff strategies for failed operations.
+``riprova`` (meaning ``retry`` in Italian) is a small, general-purpose and versatile `Python`_ library
+providing retry mechanisms with multiple backoff strategies for failed operations.
 
-For an brief introduction about backoff mechanisms for potential failed operations, `read this article`_.
+For a brief introduction about backoff mechanisms for potential failed operations, `read this article`_.
 
 
 Features
