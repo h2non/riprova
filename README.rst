@@ -32,7 +32,7 @@ List of built-in backoff strategies.
 - `Exponential backoff`_
 
 You can also implement your own one easily.
-See `ConstantBackoff` for an implementation reference.
+See `ConstantBackoff`_ for an implementation reference.
 
 
 Installation
