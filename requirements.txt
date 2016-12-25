@@ -1,2 +1,2 @@
-six~=1.10
-paco~=0.1.7 ; python_version >= '3.4.2'
+six~=1.10.0
+paco~=0.1.7 ; python_version >= '3.4'
