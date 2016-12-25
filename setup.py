@@ -98,7 +98,8 @@ setup(
         'Programming Language :: Python :: 3.6',
         'Topic :: Software Development',
         'Topic :: Software Development :: Libraries :: Python Modules',
-        'Programming Language :: Python :: Implementation :: CPython'
-        'Programming Language :: Python :: Implementation :: PyPy'
+        'Programming Language :: Python :: Implementation :: CPython',
+        'Programming Language :: Python :: Implementation :: PyPy',
+        'Programming Language :: Python :: Implementation :: Jython'
     ],
 )
