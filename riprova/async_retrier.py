@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-from paco import wraps, TimeoutLimit
 from .backoff import Backoff
 from .retrier import Retrier
 from .constants import PY_34
@@ -11,6 +10,7 @@ if not PY_34:  # pragma: no cover
     raise RuntimeError('cannot import async_retrier module in Python <= 3.4')
 
 import asyncio  # noqa
+from paco import wraps, TimeoutLimit  # noqa
 
 
 class AsyncRetrier(Retrier):
