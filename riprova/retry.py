@@ -25,18 +25,21 @@ def iscallable(x):
 
 def retry(timeout=0, backoff=None, evaluator=None, on_retry=None, **kw):
     """
-    Creates a function that accepts one or more arguments of a function and
-    either invokes func returning its result if at least arity number of
-    arguments have been provided, or returns a function that accepts the
-    remaining function arguments until the function arity is satisfied.
+    Decorator function that wraps function, method or coroutine function that
+    would be retried on failure capabilities.
+
+    Retry policy can be configured via `backoff` param.
+
+    You can also use a custom evaluator function used to determine when the
+    returned task value is valid or not, retrying the operation accordingly.
+
+    You can subscribe to every retry attempt via `on_retry` param, which
+    accepts a function or a coroutine function.
 
     This function is overloaded: you can pass a function or coroutine function
-    as first argument or an `int` indicating the explicit function arity.
+    as first argument or an `int` indicating the `timeout` param.
 
-    You can optionally ignore keyword based arguments as well passsing the
-    `ignore_kwargs` param with `True` value.
-
-    This function can be used as decorator.
+    This function as decorator.
 
     Arguments:
         timeout (int): optional maximum timeout in milliseconds.
@@ -85,8 +88,19 @@ def retry(timeout=0, backoff=None, evaluator=None, on_retry=None, **kw):
 
         await task(4, 4)
         # => 16
+
+        def on_retry(err, next_try):
+            print('Error exception: {}'.format(err))
+            print('Next try in {}ms'.format(next_try))
+
+        @riprova.retry(on_retry=on_retry)
+        async def task(x, y):
+            return x * y
+
+        await task(4, 4)
+        # => 16
     """
-    def wrapper(fn, decorated=True):
+    def decorator(fn, decorated=True):
         if not iscallable(fn):
             raise TypeError('first argument must a coroutine function, a '
                             'function or a method.')
@@ -99,14 +113,31 @@ def retry(timeout=0, backoff=None, evaluator=None, on_retry=None, **kw):
         # Normalize potentially overloaded timeout param
         _timeout = timeout if decorated else 0
 
-        # Otherwise return recursive currier function
-        retrier = RetrierClass(backoff=backoff, timeout=_timeout,
-                               evaluator=evaluator, on_retry=on_retry, **kw)
+        @functools.wraps(fn)
+        def wrapper(*args, **kw):
+            # Otherwise return recursive currier function
+            retrier = RetrierClass(backoff=backoff,
+                                   timeout=_timeout,
+                                   evaluator=evaluator,
+                                   on_retry=on_retry, **kw)
 
-        # Return partial function application
-        return (partial(retrier.run, fn)
-                if AsyncRetrier and isinstance(retrier, AsyncRetrier)
-                else functools.partial(retrier.run, fn))
+            # Expose retrier instance as static property of the callable object
+            # Useful for hacking purposes.
+            # Note: This property would be overwriten on every function
+            # execution and therefore would be exposed to race conditions under
+            # concurrent access.
+            fn.retrier = retrier
 
-    # Return currier function or decorator wrapper
-    return wrapper(timeout, False) if iscallable(timeout) else wrapper
+            # Return partial function application
+            retry_runner = (partial(retrier.run, fn)
+                            if asyncio and isinstance(retrier, AsyncRetrier)
+                            else functools.partial(retrier.run, fn))
+
+            # Run original function via retry safe runner
+            return retry_runner(*args, **kw)
+
+        # Return retry wrapper function
+        return wrapper
+
+    # Return retry delegator or decorator wrapper
+    return decorator(timeout, False) if iscallable(timeout) else decorator
