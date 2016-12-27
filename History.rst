@@ -14,4 +14,4 @@ v0.1.0 / 2016-12-25
 * First version
 
 
-.. _#2: https://github.com/h2non/riprova/issues/2)
+.. _#2: https://github.com/h2non/riprova/issues/2
