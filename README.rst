@@ -11,6 +11,7 @@ Features
 --------
 
 -  Retry decorator for simple and idiomatic consumption.
+-  Simple Pythonic programmatic interface.
 -  Maximum retry timeout support.
 -  Automatically retry operations on raised exceptions.
 -  Supports asynchronous coroutines with both ``async/await`` and ``yield from`` syntax.
@@ -19,7 +20,7 @@ Features
 -  Highly configurable supporting max retries, timeouts or retry notifier callback.
 -  Built-in backoff strategies: constant, `fibonacci`_ and `exponential`_ backoffs.
 -  Pluggable custom backoff strategies.
--  Lightweight small library with zero embedding cost.
+-  Lightweight library with zero embedding cost.
 -  Works with Python +2.6, 3.0+ and PyPy.
 
 
@@ -117,7 +118,7 @@ You can see more featured examples from the `documentation` site.
     def evaluator(response):
         # Force retry operation if not a valid response
         if response.status >= 400:
-            raise RuntimeError('invalid response status')
+            raise RuntimeError('invalid response status')  # or simple return True
         # Otherwise return False, meaning no retry
         return False
 
