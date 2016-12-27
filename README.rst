@@ -11,15 +11,16 @@ Features
 --------
 
 -  Retry decorator for simple and idiomatic consumption.
+-  Simple Pythonic programmatic interface.
 -  Maximum retry timeout support.
 -  Automatically retry operations on raised exceptions.
+-  Supports asynchronous coroutines with both ``async/await`` and ``yield from`` syntax.
 -  Configurable maximum number of retry attempts.
 -  Custom retry evaluator function, useful to determine when an operation failed or not.
 -  Highly configurable supporting max retries, timeouts or retry notifier callback.
--  Built-in back-off strategies: constant, `fibonacci`_ and `exponential`_ back-offs.
--  Pluggable, custom back-off strategies.
--  Supports asynchronous coroutines with `async/await` and `yield from` syntax.
--  Lightweight small library with zero embedding cost.
+-  Built-in backoff strategies: constant, `fibonacci`_ and `exponential`_ backoffs.
+-  Pluggable custom backoff strategies.
+-  Lightweight library with zero embedding cost.
 -  Works with Python +2.6, 3.0+ and PyPy.
 
 
@@ -82,7 +83,7 @@ API
 Examples
 ^^^^^^^^
 
-You can see all the featured examples from the `documentation`.
+You can see more featured examples from the `documentation` site.
 
 **Basic usage examples**:
 
@@ -92,13 +93,17 @@ You can see all the featured examples from the `documentation`.
 
     @riprova.retry
     def task():
-        """Retry operation if it fails with constant backoff"""
+        """Retry operation if it fails with constant backoff (default)"""
+
+    @riprova.retry(backoff=riprova.ConstantBackoff(retries=5))
+    def task():
+        """Retry operation if it fails with custom max number of retry attempts"""
 
     @riprova.retry(backoff=riprova.ExponentialBackOff(factor=0.5))
     def task():
         """Retry operation if it fails using exponential backoff"""
 
-    @riprova.retry(timeout=10000)
+    @riprova.retry(timeout=10 * 1000)
     def task():
         """Raises a TimeoutError if the retry loop exceeds from 10 seconds"""
 
@@ -113,7 +118,7 @@ You can see all the featured examples from the `documentation`.
     def evaluator(response):
         # Force retry operation if not a valid response
         if response.status >= 400:
-            raise RuntimeError('invalid response status')
+            raise RuntimeError('invalid response status')  # or simple return True
         # Otherwise return False, meaning no retry
         return False
 
@@ -134,7 +139,7 @@ You can see all the featured examples from the `documentation`.
     import requests
     from riprova import retry
 
-    # Define HTTP mocks
+    # Define HTTP mocks to simulate failed requests
     pook.get('server.com').times(3).reply(503)
     pook.get('server.com').times(1).reply(200).json({'hello': 'world'})
 
@@ -142,7 +147,7 @@ You can see all the featured examples from the `documentation`.
     # Retry evaluator function used to determine if the operated failed or not
     def evaluator(response):
         if response != 200:
-            return Exception('failed request')
+            return Exception('failed request')  # you can also simply return True
         return False
 
 
@@ -158,7 +163,7 @@ You can see all the featured examples from the `documentation`.
         return requests.get(url)
 
 
-    # Run request
+    # Run task that might fail
     fetch('http://server.com')
 
 
