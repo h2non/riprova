@@ -134,6 +134,29 @@ def test_async_retrier_evaluator(MagicMock, coro):
 
 
 @python34
+def test_async_retrier_cancelled_error(MagicMock, coro):
+    on_retry = MagicMock()
+
+    @asyncio.coroutine
+    def coro(x):
+        if on_retry.call_count < x:
+            raise ValueError('small number')
+        raise asyncio.CancelledError('oops')
+
+    retrier = AsyncRetrier(on_retry=on_retry,
+                           backoff=ConstantBackoff(interval=0, retries=10))
+
+    with pytest.raises(asyncio.CancelledError):
+        run_coro(retrier.run(coro, 4))
+
+    assert on_retry.called
+    assert on_retry.call_count == 4
+
+    assert retrier.attempts == 5
+    assert retrier.error is not None
+
+
+@python34
 def test_async_retrier_run_max_retries_error(MagicMock, coro):
     on_retry = MagicMock()
     task = coro(10)

@@ -170,14 +170,26 @@ class AsyncRetrier(Retrier):
         Runs coroutine in a error-safe infinitive loop until the
         operation succeed or the max retry attempts is reached.
         """
+        err = None
+
         while True:
             try:
                 return (yield from self._call(coro, *args, **kw))
-            except Exception as err:
-                yield from self._handle_error(err)
 
-            # Increment number of attempts
+            # Collect raised errors by cancelled futures
+            except asyncio.CancelledError as _err:
+                err = _err
+
+            # Handle any other exception error
+            except Exception as _err:
+                yield from self._handle_error(_err)
+
+            # Increment number of retry attempts
             self.attempts += 1
+
+            # Forward raised exception, if needed
+            if err is not None:
+                raise err
 
     @asyncio.coroutine
     def run(self, coro, *args, **kw):
