@@ -13,12 +13,12 @@ Features
 -  Retry decorator for simple and idiomatic consumption.
 -  Maximum retry timeout support.
 -  Automatically retry operations on raised exceptions.
+-  Supports asynchronous coroutines with both ``async/await`` and ``yield from`` syntax.
 -  Configurable maximum number of retry attempts.
 -  Custom retry evaluator function, useful to determine when an operation failed or not.
 -  Highly configurable supporting max retries, timeouts or retry notifier callback.
--  Built-in back-off strategies: constant, `fibonacci`_ and `exponential`_ back-offs.
--  Pluggable, custom back-off strategies.
--  Supports asynchronous coroutines with `async/await` and `yield from` syntax.
+-  Built-in backoff strategies: constant, `fibonacci`_ and `exponential`_ back-offs.
+-  Pluggable custom backoff strategies.
 -  Lightweight small library with zero embedding cost.
 -  Works with Python +2.6, 3.0+ and PyPy.
 
