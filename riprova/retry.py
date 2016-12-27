@@ -121,13 +121,6 @@ def retry(timeout=0, backoff=None, evaluator=None, on_retry=None, **kw):
                                    evaluator=evaluator,
                                    on_retry=on_retry, **kw)
 
-            # Expose retrier instance as static property of the callable object
-            # Useful for hacking purposes.
-            # Note: This property would be overwriten on every function
-            # execution and therefore would be exposed to race conditions under
-            # concurrent access.
-            fn.retrier = retrier
-
             # Return partial function application
             retry_runner = (partial(retrier.run, fn)
                             if asyncio and isinstance(retrier, AsyncRetrier)

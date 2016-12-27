@@ -5,4 +5,4 @@ from riprova.timing import now
 
 def test_now():
     assert isinstance(now(), int)
-    assert now() >= int(time.time() * 1000)
+    assert now() <= int(time.time() * 1000) + 1
