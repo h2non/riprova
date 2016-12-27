@@ -4,7 +4,7 @@ History
 v0.1.1 / 2016-12-27
 -------------------
 
-* fix(`#2`_: handle and forward ``asyncio.CancelledError`` as non-retriable error.
+* fix(`#2`_): handle and forward ``asyncio.CancelledError`` as non-retriable error.
 
 
 
