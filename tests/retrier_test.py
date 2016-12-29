@@ -18,7 +18,9 @@ def test_retrier_defaults():
 
 def test_retrier_custom():
     def sleep(): pass
+
     def on_retry(): pass  # noqa
+
     def evaluator(): pass  # noqa
 
     backoff = ConstantBackoff()
@@ -121,7 +123,7 @@ def test_retrier_run_max_timeout(MagicMock):
     iterable = (ValueError, NotImplementedError, RuntimeError, Exception)
     task = MagicMock(side_effect=iterable)
 
-    retrier = Retrier(timeout=200, backoff=ConstantBackoff(interval=100))
+    retrier = Retrier(timeout=200, backoff=ConstantBackoff(interval=120))
 
     with pytest.raises(RetryTimeoutError):
         retrier.run(task, 2, 4, foo='bar')
@@ -130,8 +132,8 @@ def test_retrier_run_max_timeout(MagicMock):
     assert task.call_count >= 1
     task.assert_called_with(2, 4, foo='bar')
 
-    assert retrier.attempts >= 1
-    assert isinstance(retrier.error, ValueError)
+    assert retrier.attempts == 2
+    assert isinstance(retrier.error, NotImplementedError)
 
 
 def test_retrier_istimeout():
