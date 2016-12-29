@@ -159,7 +159,7 @@ class Retrier(object):
         # Update latest cached error
         self.error = err
 
-        # Did user interrupt function?
+        # Did user interrupt function or import fail?
         if err is KeyboardInterrupt or err is ImportError:
             raise
 
