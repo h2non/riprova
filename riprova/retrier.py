@@ -149,7 +149,6 @@ class Retrier(object):
             bool: `True` if timeout exceeded, otherwise `False`.
         """
         now_time = now()
-        print now_time - start
         return now_time - start + 1 > self.timeout > 0
 
     def _handle_error(self, err):
