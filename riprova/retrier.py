@@ -148,7 +148,8 @@ class Retrier(object):
         Returns:
             bool: `True` if timeout exceeded, otherwise `False`.
         """
-        return self.timeout > 0 and (now() - start) > self.timeout
+        now_time = now()
+        return now_time - start + 1 > self.timeout > 0
 
     def _handle_error(self, err):
         """
@@ -157,19 +158,25 @@ class Retrier(object):
         # Update latest cached error
         self.error = err
 
+        # Did user interrupt function or import fail?
+        if err is KeyboardInterrupt or err is ImportError:
+            raise
+
+    def _notify_subscriber(self, delay):
+        # Notify retry subscriber, if needed
+        if self.on_retry:
+            self.on_retry(self.error, delay)
+
+    def _get_delay(self):
         # Get delay before next retry
         delay = self.backoff.next()
 
         # If backoff is ready
         if delay == Backoff.STOP:
-            return raise_from(MaxRetriesExceeded('max retries exceeded'), err)
+            return raise_from(MaxRetriesExceeded('max retries exceeded'),
+                              self.error)
 
-        # Notify retry subscriber, if needed
-        if self.on_retry:
-            self.on_retry(err, delay)
-
-        # Sleep before next try
-        self.sleep(0.5)
+        return delay
 
     def run(self, fn, *args, **kw):
         """
@@ -201,7 +208,7 @@ class Retrier(object):
         start = now()
 
         # Run operation in a infinitive loop until the task succeeded or
-        # and max retry attemts are reached.
+        # and max retry attempts are reached.
         while True:
             # Ensure we do not exceeded the max timeout
             if self.istimeout(start):
@@ -212,6 +219,11 @@ class Retrier(object):
                 return self._call(fn, *args, **kw)
             except Exception as err:
                 self._handle_error(err)
+                delay = self._get_delay()
+                self._notify_subscriber(delay)
 
             # Increment retry attempts
             self.attempts += 1
+
+            # Sleep before next try
+            self.sleep(float(delay) / 1000)  # Millisecs converted to secs
