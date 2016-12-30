@@ -196,7 +196,7 @@ def test_retrier_run_max_timeout(MagicMock):
     task.assert_called_with(2, 4, foo='bar')
 
     assert retrier.attempts == 2
-    assert isinstance(retrier.error, NotImplementedError)
+    assert isinstance(retrier.error, (NotImplementedError, RuntimeError))
 
 
 def test_retrier_istimeout():

@@ -280,4 +280,4 @@ class Retrier(object):
             self.attempts += 1
 
             # Sleep before next try
-            self.sleep(delay / 1000)  # Millisecs converted to secs
+            self.sleep(float(delay) / 1000)  # Millisecs converted to secs

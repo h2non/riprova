@@ -227,6 +227,10 @@ class AsyncRetrier(Retrier):
             except asyncio.CancelledError as _err:
                 err = _err
 
+            # Collect timeout error
+            except asyncio.TimeoutError as _err:
+                err = _err
+
             # Handle any other exception error
             except Exception as _err:
                 yield from self._handle_error(_err)
@@ -267,14 +271,10 @@ class AsyncRetrier(Retrier):
         self.error = None
         self.attempts = 0
 
-        # Run coroutine function in a timeout limited loop
-        try:
-            # If not timeout defined, run the coroutine function
-            if self.timeout == 0:
-                return (yield from self._run(coro, *args, **kw))
+        # If not timeout defined, run the coroutine function
+        if self.timeout == 0:
+            return (yield from self._run(coro, *args, **kw))
 
-            # Otherwise run it with a time limited context
-            with TimeoutLimit(self.timeout / 1000):
-                return (yield from self._run(coro, *args, **kw))
-        except asyncio.TimeoutError as err:
-            raise err from self.error
+        # Otherwise run it with a time limited context
+        with TimeoutLimit(self.timeout / 1000):
+            return (yield from self._run(coro, *args, **kw))
