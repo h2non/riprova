@@ -134,6 +134,29 @@ def test_async_retrier_evaluator(MagicMock, coro):
 
 
 @python34
+def test_async_retrier_evaluator_error_default(MagicMock, coro):
+    on_retry = MagicMock()
+    task = coro(4)
+
+    def evaluator(x):
+        if x < 4:
+            raise ValueError('small number')
+        raise ImportError('pass error')
+
+    retrier = AsyncRetrier(evaluator=evaluator, on_retry=on_retry,
+                           backoff=ConstantBackoff(interval=0, retries=10))
+
+    with pytest.raises(ImportError):
+        run_coro(retrier.run(task, 2, 4, foo=6))
+
+    assert on_retry.called
+    assert on_retry.call_count == 3
+
+    assert retrier.attempts == 3
+    assert isinstance(retrier.error, ImportError)
+
+
+@python34
 def test_async_retrier_cancelled_error(MagicMock, coro):
     on_retry = MagicMock()
 

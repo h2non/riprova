@@ -3,8 +3,11 @@ from .retry import retry
 from .retrier import Retrier
 from .backoff import Backoff
 from .constants import PY_34
+from .whitelist import ErrorWhitelist, add_whitelist_error
 from .strategies import *  # noqa
-from .exceptions import RetryError, MaxRetriesExceeded, RetryTimeoutError
+from .exceptions import (RetryError, MaxRetriesExceeded,
+                         RetryTimeoutError, NotRetriableError)
+
 
 __author__ = 'Tomas Aparicio'
 __license__ = 'MIT'
@@ -20,9 +23,12 @@ __all__ = (
     'ConstantBackoff',
     'FibonacciBackoff',
     'ExponentialBackOff',
+    'ErrorWhitelist',
+    'add_whitelist_error',
     'RetryError',
     'MaxRetriesExceeded',
-    'RetryTimeoutError'
+    'RetryTimeoutError',
+    'NotRetriableError'
 )
 
 

@@ -1,7 +1,9 @@
 # -*- coding: utf-8 -*-
+from six import raise_from
 from .backoff import Backoff
 from .retrier import Retrier
 from .constants import PY_34
+from .whitelist import ErrorWhitelist
 from .strategies import ConstantBackoff
 from .exceptions import MaxRetriesExceeded, RetryError
 
@@ -10,7 +12,20 @@ if not PY_34:  # pragma: no cover
     raise RuntimeError('cannot import async_retrier module in Python <= 3.4')
 
 import asyncio  # noqa
-from paco import wraps, TimeoutLimit  # noqa
+from paco import TimeoutLimit  # noqa
+
+
+def corowrap(fn):
+    """
+    Wraps a given function as a coroutine.
+
+    Arguments:
+        fn (function|coroutinefunction)
+
+    Returns:
+        coroutinefunction
+    """
+    return asyncio.coroutine(fn)
 
 
 class AsyncRetrier(Retrier):
@@ -33,6 +48,18 @@ class AsyncRetrier(Retrier):
             simply return `True` in order to retry the operation.
             Otherwise the operation will be considered as valid and the
             retry loop will end.
+        error_evaluator (function|coroutinefunction): optional evaluator
+            function used to determine when a task raised exception should
+            be proccesed as legit error and therefore retried or, otherwise,
+            treated as whitelist error, stoping the retry loop and re-raising
+            the exception to the task consumer.
+            This provides high versatility to developers in order to compose
+            any exception, for instance. Evaluator is an unary
+            function that accepts 1 argument: the raised exception object.
+            Evaluator function can raise an exception, return an error or
+            simply return `True` in order to retry the operation.
+            Otherwise the operation will be considered as valid and the
+            retry loop will end.
         on_retry (function): optional function to call on before very retry
             operation. `on_retry` function accepts 2 arguments: `err, next_try`
             and should return nothing.
@@ -40,6 +67,8 @@ class AsyncRetrier(Retrier):
             sleep. Defaults to `asyncio.sleep`.
 
     Attributes:
+        whitelist (riprova.ErrorWhitelist): default error whitelist instance
+            used to evaluate when.
         timeout (int): stores the maximum retries attempts timeout in
             milliseconds. Defaults to `0`.
         attempts (int): number of retry attempts being executed from last
@@ -52,6 +81,8 @@ class AsyncRetrier(Retrier):
             Defaults to `riprova.ConstantBackoff`.
         evaluator (coroutinefunction): stores the used evaluator function.
             Defaults to `None`.
+        error_evaluator (function|coroutinefunction): stores the used error
+            evaluator function. Defaults to `self.is_whitelisted_error()`.
         on_retry (coroutinefunction): stores the retry notifier function.
             Defaults to `None`.
 
@@ -75,10 +106,14 @@ class AsyncRetrier(Retrier):
         assert retrier.error == None
     """
 
+    # Stores the default error whitelist used for error retry evaluation
+    whitelist = ErrorWhitelist()
+
     def __init__(self,
                  timeout=0,
                  backoff=None,
                  evaluator=None,
+                 error_evaluator=None,
                  on_retry=None,
                  sleep_coro=None):
 
@@ -92,18 +127,14 @@ class AsyncRetrier(Retrier):
         self.error = None
         # Maximum optional timeout in miliseconds. Use 0 for no limit
         self.timeout = timeout or 0
-        # Optional evaluator function used to determine when an operation
-        # should be retried or not. This allow the developer to retry
-        # operations that do not raised any exception, for instance.
-        # Evaluator function accepts 1 arguments: the returned task result.
-        # Evaluator function can raise an exception, return an error or
-        # return `True` in order to retry the operation. Otherwise the
-        # operation will be considered as valid and the retry loop will end.
-        self.evaluator = wraps(evaluator) if evaluator else None
+        # Stores optional evaluator function
+        self.evaluator = corowrap(evaluator) if evaluator else None
+        # Stores the error evaluator function.
+        self.error_evaluator = error_evaluator or self.is_whitelisted_error
         # Stores optional coroutine function to call on before very
         # retry operation. `on_retry` function accepts 2 arguments:
         # `err, next_try` and should return nothing.
-        self.on_retry = wraps(on_retry) if on_retry else None
+        self.on_retry = corowrap(on_retry) if on_retry else None
         # Backoff strategy to use. Defaults to `riprova.ConstantBackoff`.
         self.backoff = backoff or ConstantBackoff()
         # Function used to sleep. Defaults `asyncio.sleep()`.
@@ -150,6 +181,22 @@ class AsyncRetrier(Retrier):
         # Update latest cached error
         self.error = err
 
+        # Defaults to false
+        retry = True
+
+        # Evaluate if error is legit or should be retried
+        if self.error_evaluator:
+            retry = yield from (asyncio.coroutine(self.error_evaluator)(err))
+
+        # If evalutor returns an error exception, just raise it
+        if retry and isinstance(retry, Exception):
+            raise_from(retry, self.error)
+
+        # If retry evaluator returns False, raise original error and
+        # stop the retry cycle
+        if retry is False:
+            raise err
+
         # Get delay before next retry
         delay = self.backoff.next()
 
@@ -161,7 +208,7 @@ class AsyncRetrier(Retrier):
         if self.on_retry:
             yield from self.on_retry(err, delay)
 
-        # Sleep before next try
+        # Sleep before the next try attempt
         yield from self.sleep(delay / 1000)
 
     @asyncio.coroutine

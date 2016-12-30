@@ -13,6 +13,7 @@ Features
 -  Retry decorator for simple and idiomatic consumption.
 -  Simple Pythonic programmatic interface.
 -  Maximum retry timeout support.
+-  Supports error whitelisting and custom error evaluator logic.
 -  Automatically retry operations on raised exceptions.
 -  Supports asynchronous coroutines with both ``async/await`` and ``yield from`` syntax.
 -  Configurable maximum number of retry attempts.
@@ -63,9 +64,12 @@ API
 - riprova.ConstantBackoff_
 - riprova.FibonacciBackoff_
 - riprova.ExponentialBackoff_
+- riprova.ErrorWhitelist_
+- riprova.add_whitelist_error_
 - riprova.RetryError_
 - riprova.RetryTimeoutError_
 - riprova.MaxRetriesExceeded_
+- riprova.NotRetriableError_
 
 
 .. _riprova.retry: http://riprova.readthedocs.io/en/latest/api.html#riprova.retry
@@ -75,9 +79,12 @@ API
 .. _riprova.ConstantBackoff: http://riprova.readthedocs.io/en/latest/api.html#riprova.ConstantBackoff
 .. _riprova.FibonacciBackoff: http://riprova.readthedocs.io/en/latest/api.html#riprova.FibonacciBackoff
 .. _riprova.ExponentialBackoff: http://riprova.readthedocs.io/en/latest/api.html#riprova.ExponentialBackoff
+.. _riprova.ErrorWhitelist: http://riprova.readthedocs.io/en/latest/api.html#riprova.ErrorWhitelist
+.. _riprova.add_whitelist_error: http://riprova.readthedocs.io/en/latest/api.html#riprova.add_whitelist_error
 .. _riprova.RetryError: http://riprova.readthedocs.io/en/latest/api.html#riprova.RetryError
 .. _riprova.RetryTimeoutError: http://riprova.readthedocs.io/en/latest/api.html#riprova.RetryTimeoutError
 .. _riprova.MaxRetriesExceeded: http://riprova.readthedocs.io/en/latest/api.html#riprova.MaxRetriesExceeded
+.. _riprova.NotRetriableError: http://riprova.readthedocs.io/en/latest/api.html#riprova.NotRetriableError
 
 
 Examples

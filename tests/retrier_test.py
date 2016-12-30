@@ -102,6 +102,69 @@ def test_retrier_evaluator(MagicMock):
     assert retrier.error is None
 
 
+def test_retrier_error_evaluator_default(MagicMock):
+    iterable = (1, 2, 3, 4)
+    task = MagicMock(side_effect=iterable)
+    on_retry = MagicMock()
+
+    def evaluator(x):
+        if x < 4:
+            raise ValueError('small number')
+        raise ImportError('pass error')
+
+    retrier = Retrier(evaluator=evaluator, on_retry=on_retry,
+                      backoff=ConstantBackoff(interval=0, retries=10))
+
+    with pytest.raises(ImportError):
+        retrier.run(task, 2, 4, foo='bar')
+
+    assert task.called
+    assert task.call_count == 4
+    task.assert_called_with(2, 4, foo='bar')
+
+    assert on_retry.called
+    assert on_retry.call_count == 3
+
+    assert retrier.attempts == 3
+    assert isinstance(retrier.error, ImportError)
+
+
+def test_retrier_error_evaluator_custom(MagicMock):
+    iterable = (1, 2, 3, 4)
+    task = MagicMock(side_effect=iterable)
+    on_retry = MagicMock()
+
+    def evaluator(x):
+        if x == 1:
+            raise ValueError('small number')
+        if x == 2:
+            raise RuntimeError('small number')
+        if x == 3:
+            raise SyntaxError('small number')
+        raise ImportError('pass error')
+
+    def error_evaluator(err):
+        # Returning True means retry the operation, otherwise stop
+        return isinstance(err, (ValueError, RuntimeError, SyntaxError))
+
+    retrier = Retrier(evaluator=evaluator, on_retry=on_retry,
+                      error_evaluator=error_evaluator,
+                      backoff=ConstantBackoff(interval=0, retries=10))
+
+    with pytest.raises(ImportError):
+        retrier.run(task, 2, 4, foo='bar')
+
+    assert task.called
+    assert task.call_count == 4
+    task.assert_called_with(2, 4, foo='bar')
+
+    assert on_retry.called
+    assert on_retry.call_count == 3
+
+    assert retrier.attempts == 3
+    assert isinstance(retrier.error, ImportError)
+
+
 def test_retrier_run_max_retries_error(MagicMock):
     iterable = (ValueError, RuntimeError, NotImplementedError)
     task = MagicMock(side_effect=iterable)

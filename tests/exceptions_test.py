@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
-from riprova import RetryError, MaxRetriesExceeded, RetryTimeoutError
+from riprova import (RetryError, MaxRetriesExceeded,
+                     RetryTimeoutError, NotRetriableError)
 
 
 def test_retry_error():
@@ -15,3 +16,10 @@ def test_max_retries_error():
 def test_retry_timeout_error():
     assert isinstance(RetryTimeoutError(), Exception)
     assert issubclass(RetryTimeoutError, RetryError)
+
+
+def test_not_retriable_error():
+    assert isinstance(NotRetriableError(), Exception)
+    assert not issubclass(NotRetriableError, RetryError)
+    assert hasattr(NotRetriableError(), '__retry__')
+    assert getattr(NotRetriableError(), '__retry__') is False

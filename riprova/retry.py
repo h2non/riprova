@@ -6,7 +6,6 @@ from .retrier import Retrier
 
 if PY_34:  # pragma: no cover
     import asyncio
-    from paco import partial
     from .async_retrier import AsyncRetrier
 else:
     asyncio, AsyncRetrier, partial = None, None, None
@@ -23,7 +22,8 @@ def iscallable(x):
     ])
 
 
-def retry(timeout=0, backoff=None, evaluator=None, on_retry=None, **kw):
+def retry(timeout=0, backoff=None, evaluator=None,
+          error_evaluator=None, on_retry=None, **kw):
     """
     Decorator function that wraps function, method or coroutine function that
     would be retried on failure capabilities.
@@ -46,10 +46,15 @@ def retry(timeout=0, backoff=None, evaluator=None, on_retry=None, **kw):
             Use `0` for no limit. Defaults to `0`.
         backoff (riprova.Backoff): optional backoff strategy to use.
             Defaults to `riprova.ConstantBackoff`.
-        evaluator (function|coroutinefunction): optional retry error evaluator
+        evaluator (function|coroutinefunction): optional retry result evaluator
             function used to determine if an operator failed or not.
             Useful when domain-specific evaluation, such as valid HTTP
             responses.
+        error_evaluator (function|coroutinefunction): optional error
+            evaluator function usef to determine if a reased exception is
+            legit or not, and therefore should be handled as a failure or
+            simply forward the raised exception and stop the retry cycle.
+            This is useful in order to ignore custom error exceptions.
         on_retry (function|coroutinefunction): optional on retry event
             subscriber that will be executed before every retry attempt.
             Useful for reporting and tracing.
@@ -122,9 +127,7 @@ def retry(timeout=0, backoff=None, evaluator=None, on_retry=None, **kw):
                                    on_retry=on_retry, **kw)
 
             # Return partial function application
-            retry_runner = (partial(retrier.run, fn)
-                            if asyncio and isinstance(retrier, AsyncRetrier)
-                            else functools.partial(retrier.run, fn))
+            retry_runner = functools.partial(retrier.run, fn)
 
             # Run original function via retry safe runner
             return retry_runner(*args, **kw)

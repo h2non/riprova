@@ -3,13 +3,18 @@ import time
 from six import raise_from
 from .timing import now
 from .backoff import Backoff
+from .whitelist import ErrorWhitelist
 from .strategies import ConstantBackoff
 from .exceptions import MaxRetriesExceeded, RetryError, RetryTimeoutError
 
 
 class Retrier(object):
     """
-    Implements a simple function retry mechanism.
+    Implements a simple function retry mechanism with configurable backoff
+    strategy and task timeout limit handler.
+
+    Additionally, you can subcribe to `retry` attempts via `on_retry` param,
+    which accepts a binary function.
 
     Arguments:
         timeout (int): maximum optional timeout in miliseconds.
@@ -25,6 +30,18 @@ class Retrier(object):
             simply return `True` in order to retry the operation.
             Otherwise the operation will be considered as valid and the
             retry loop will end.
+        error_evaluator (function): optional evaluator function used to
+            determine when a task raised exception should be proccesed as
+            legit error and therefore retried or, otherwise, treated as
+            whitelist error, stoping the retry loop and re-raising the
+            exception to the task consumer.
+            This provides high versatility to developers in order to compose
+            any exception, for instance. Evaluator is an unary
+            function that accepts 1 argument: the raised exception object.
+            Evaluator function can raise an exception, return an error or
+            simply return `True` in order to retry the operation.
+            Otherwise the operation will be considered as valid and the
+            retry loop will end.
         on_retry (function): optional function to call on before very retry
             operation. `on_retry` function accepts 2 arguments: `err, next_try`
             and should return nothing.
@@ -32,6 +49,8 @@ class Retrier(object):
             Defaults `time.sleep()`.
 
     Attributes:
+        whitelist (riprova.ErrorWhitelist): default error whitelist instance
+            used to evaluate when.
         timeout (int): stores the maximum retries attempts timeout in
             milliseconds. Use `0` for no limit. Defaults to `0`.
         attempts (int): number of retry attempts being executed from last
@@ -44,6 +63,8 @@ class Retrier(object):
             Defaults to `riprova.ConstantBackoff`.
         evaluator (function): stores the used evaluator function.
             Defaults to `None`.
+        error_evaluator (function): stores the used error evaluator function.
+            Defaults to `self.is_whitelisted_error()`.
         on_retry (function): stores the retry notifier function.
             Defaults to `None`.
 
@@ -52,6 +73,20 @@ class Retrier(object):
 
     Usage::
 
+        # Basic usage
+        retrier = riprova.Retrier(
+            timeout=10 * 1000,
+            backoff=riprova.FibonacciBackoff(retries=5))
+
+        def task(x):
+            return x * x
+
+        result = retrier.run(task, 4)
+        assert result == 16
+        assert retrier.attempts == 0
+        assert retrier.error == None
+
+        # Using the retrier
         retrier = riprova.Retrier(
             timeout=10 * 1000,
             backoff=riprova.FibonacciBackoff(retries=5))
@@ -66,10 +101,14 @@ class Retrier(object):
 
     """
 
+    # Stores the default error whitelist used for error retry evaluation
+    whitelist = ErrorWhitelist()
+
     def __init__(self,
                  timeout=0,
                  backoff=None,
                  evaluator=None,
+                 error_evaluator=None,
                  on_retry=None,
                  sleep_fn=None):
 
@@ -87,18 +126,17 @@ class Retrier(object):
         # `on_retry` function accepts 2 arguments: `err, next_try` and
         # should return nothing.
         self.on_retry = on_retry
-        # Optional evaluator function used to determine when an operation
-        # should be retried or not. This allow the developer to retry
-        # operations that do not raised any exception, for instance.
-        # Evaluator function accepts 1 arguments: the returned task result.
-        # Evaluator function can raise an exception, return an error or
-        # return `True` in order to retry the operation. Otherwise the
-        # operation will be considered as valid and the retry loop will end.
+        # Stores optional evaluator function
         self.evaluator = evaluator
+        # Stores the error evaluator function.
+        self.error_evaluator = error_evaluator or self.is_whitelisted_error
         # Backoff strategy to use. Defaults to `riprova.ConstantBackoff`.
         self.backoff = backoff or ConstantBackoff()
         # Function used to sleep. Defaults `time.sleep()`.
         self.sleep = sleep_fn or time.sleep
+
+    def is_whitelisted_error(self, err):
+        return not self.whitelist.iswhitelisted(err)
 
     def _call(self, fn, *args, **kw):
         """
@@ -126,7 +164,7 @@ class Retrier(object):
 
         # If True, raise a custom exception
         if err is True:
-            err = RetryError('evaluator assertion returned True')
+            err = RetryError('retry evaluator assertion returned True')
             return raise_from(err, self.error)
 
         # Otherwise simply return the error object
@@ -148,8 +186,7 @@ class Retrier(object):
         Returns:
             bool: `True` if timeout exceeded, otherwise `False`.
         """
-        now_time = now()
-        return now_time - start + 1 > self.timeout > 0
+        return now() - start + 1 > self.timeout > 0
 
     def _handle_error(self, err):
         """
@@ -158,9 +195,21 @@ class Retrier(object):
         # Update latest cached error
         self.error = err
 
-        # Did user interrupt function or import fail?
-        if err is KeyboardInterrupt or err is ImportError:
-            raise
+        # Defaults to false
+        retry = True
+
+        # Evaluate if error is legit or should be retried
+        if self.error_evaluator:
+            retry = self.error_evaluator(err)
+
+        # If evalutor returns an error exception, just raise it
+        if retry and isinstance(retry, Exception):
+            raise_from(retry, self.error)
+
+        # If retry evaluator returns False, raise original error and
+        # stop the retry cycle
+        if retry is False:
+            raise err
 
     def _notify_subscriber(self, delay):
         # Notify retry subscriber, if needed
@@ -171,7 +220,7 @@ class Retrier(object):
         # Get delay before next retry
         delay = self.backoff.next()
 
-        # If backoff is ready
+        # If backoff is done, raise an exception
         if delay == Backoff.STOP:
             return raise_from(MaxRetriesExceeded('max retries exceeded'),
                               self.error)
@@ -204,7 +253,7 @@ class Retrier(object):
         # used in single thread environment.
         self.backoff.reset()
 
-        # Store task initialization time for timeouts
+        # Task initialization time for timeout tracking
         start = now()
 
         # Run operation in a infinitive loop until the task succeeded or
@@ -218,12 +267,17 @@ class Retrier(object):
                 # Try running the potential failed operation
                 return self._call(fn, *args, **kw)
             except Exception as err:
+                # Handle error accordingly and re-raised whitelisted ones
                 self._handle_error(err)
-                delay = self._get_delay()
-                self._notify_subscriber(delay)
+
+            # Get delay before next try based on the configured backoff
+            delay = self._get_delay()
+
+            # Notify retry event subscriber, if needed
+            self._notify_subscriber(delay)
 
             # Increment retry attempts
             self.attempts += 1
 
             # Sleep before next try
-            self.sleep(float(delay) / 1000)  # Millisecs converted to secs
+            self.sleep(delay / 1000)  # Millisecs converted to secs
