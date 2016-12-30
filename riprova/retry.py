@@ -124,6 +124,7 @@ def retry(timeout=0, backoff=None, evaluator=None,
             retrier = RetrierClass(backoff=backoff,
                                    timeout=_timeout,
                                    evaluator=evaluator,
+                                   error_evaluator=error_evaluator,
                                    on_retry=on_retry, **kw)
 
             # Return partial function application
