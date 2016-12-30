@@ -18,9 +18,9 @@ def test_error_whitelist():
     assert whitelist.errors == set([Exception, RuntimeError])
 
     # Test add()
-    whitelist.add(TimeoutError, SystemExit)
+    whitelist.add(BaseException, SystemExit)
     assert whitelist.errors == set([Exception, RuntimeError,
-                                    TimeoutError, SystemExit])
+                                    BaseException, SystemExit])
 
 
 def test_error_whitelist_invalid():
