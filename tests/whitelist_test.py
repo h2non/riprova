@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 import pytest
-from riprova import ErrorWhitelist, NotRetriableError
+from riprova import ErrorWhitelist, NotRetriableError, add_whitelist_error
 
 
 def test_error_whitelist():
@@ -64,3 +64,20 @@ class RetryError(NotRetriableError):
 ])
 def test_error_whitelist_iswhitedlisted(error, expected):
     assert ErrorWhitelist().iswhitelisted(error) is expected
+
+
+def test_add_whitelist_error():
+    whitelist = ErrorWhitelist.WHITELIST.copy()
+
+    assert len(ErrorWhitelist.WHITELIST) == len(whitelist)
+    add_whitelist_error(AttributeError, EnvironmentError)
+
+    assert len(ErrorWhitelist.WHITELIST) == len(whitelist) + 2
+
+
+def test_add_whitelist_error_invalid():
+    with pytest.raises(TypeError):
+        add_whitelist_error(None)
+
+    with pytest.raises(TypeError):
+        add_whitelist_error(dict())
