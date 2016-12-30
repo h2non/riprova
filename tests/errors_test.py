@@ -1,15 +1,16 @@
 # -*- coding: utf-8 -*-
 import pytest
-from riprova import ErrorWhitelist, NotRetriableError, add_whitelist_error
+from riprova import (ErrorWhitelist, ErrorBlacklist,
+                     NotRetriableError, add_whitelist_error)
 
 
 def test_error_whitelist():
     whitelist = ErrorWhitelist()
     assert type(ErrorWhitelist.WHITELIST) is set
 
-    assert len(whitelist._whitelist) > 4
-    assert type(whitelist._whitelist) is set
-    assert whitelist._whitelist is not ErrorWhitelist.WHITELIST
+    assert len(whitelist._list) > 4
+    assert type(whitelist._list) is set
+    assert whitelist._list is not ErrorWhitelist.WHITELIST
 
     # Test setter
     whitelist.errors = (Exception, RuntimeError)
@@ -48,6 +49,45 @@ class RetryError(NotRetriableError):
 
 
 @pytest.mark.parametrize("error,expected", [
+    (SystemExit(), False),
+    (ImportError(), False),
+    (ReferenceError(), False),
+    (SyntaxError(), False),
+    (KeyboardInterrupt(), False),
+    (NotRetriableError(), False),
+    (NoRetryError(), False),
+    (ReferenceError(), False),
+    (RetryError(), True),
+    (Exception(), True),
+    (RuntimeError(), True),
+    (TypeError(), True),
+    (ValueError(), True),
+])
+def test_error_whitelist_isretry(error, expected):
+    assert ErrorWhitelist().isretry(error) is expected
+
+
+def test_error_blacklist():
+    blacklist = ErrorBlacklist()
+    assert type(ErrorBlacklist.WHITELIST) is set
+
+    assert len(blacklist._list) > 4
+    assert type(blacklist._list) is set
+    assert blacklist._list is not ErrorWhitelist.WHITELIST
+
+    # Test setter
+    blacklist.errors = (Exception, RuntimeError)
+
+    # Test getter
+    assert blacklist.errors == set([Exception, RuntimeError])
+
+    # Test add()
+    blacklist.add(BaseException, SystemExit)
+    assert blacklist.errors == set([Exception, RuntimeError,
+                                    BaseException, SystemExit])
+
+
+@pytest.mark.parametrize("error,expected", [
     (SystemExit(), True),
     (ImportError(), True),
     (ReferenceError(), True),
@@ -55,15 +95,15 @@ class RetryError(NotRetriableError):
     (KeyboardInterrupt(), True),
     (NotRetriableError(), True),
     (NoRetryError(), True),
-    (RetryError(), False),
     (ReferenceError(), True),
+    (RetryError(), False),
     (Exception(), False),
     (RuntimeError(), False),
     (TypeError(), False),
     (ValueError(), False),
 ])
-def test_error_whitelist_iswhitedlisted(error, expected):
-    assert ErrorWhitelist().iswhitelisted(error) is expected
+def test_error_blacklist_isretry(error, expected):
+    assert ErrorBlacklist().isretry(error) is expected
 
 
 def test_add_whitelist_error():

@@ -3,7 +3,7 @@ from six import raise_from
 from .backoff import Backoff
 from .retrier import Retrier
 from .constants import PY_34
-from .whitelist import ErrorWhitelist
+from .errors import ErrorWhitelist
 from .strategies import ConstantBackoff
 from .exceptions import MaxRetriesExceeded, RetryError
 
@@ -69,6 +69,9 @@ class AsyncRetrier(Retrier):
     Attributes:
         whitelist (riprova.ErrorWhitelist): default error whitelist instance
             used to evaluate when.
+        blacklist (riprova.ErrorBlacklist): default error blacklist instance
+            used to evaluate when.
+            Blacklist and Whitelist are mutually exclusive.
         timeout (int): stores the maximum retries attempts timeout in
             milliseconds. Defaults to `0`.
         attempts (int): number of retry attempts being executed from last
@@ -106,8 +109,11 @@ class AsyncRetrier(Retrier):
         assert retrier.error == None
     """
 
-    # Stores the default error whitelist used for error retry evaluation
-    whitelist = ErrorWhitelist()
+    # Stores the default global error whitelist used for error retry evaluation
+    whitelist = None
+
+    # Blacklist is just a semantic alias to whitelist
+    blacklist = None
 
     def __init__(self,
                  timeout=0,
@@ -139,6 +145,10 @@ class AsyncRetrier(Retrier):
         self.backoff = backoff or ConstantBackoff()
         # Function used to sleep. Defaults `asyncio.sleep()`.
         self.sleep = sleep_coro or asyncio.sleep
+        # Stores the default error whitelist used for error retry evaluation
+        self.whitelist = (AsyncRetrier.blacklist or
+                          AsyncRetrier.whitelist or
+                          ErrorWhitelist())
 
     @asyncio.coroutine
     def _call(self, coro, *args, **kw):

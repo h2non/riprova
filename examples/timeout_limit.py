@@ -21,4 +21,4 @@ def mul2(x):
 try:
     mul2(2)
 except riprova.RetryTimeoutError as err:
-    print('Timeout error:', err)
+    print('Timeout error: {}'.format(err))

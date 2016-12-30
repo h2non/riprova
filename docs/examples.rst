@@ -31,6 +31,18 @@ Retry failed HTTP requests using asyncio + aiohttp
 .. literalinclude:: ../examples/http_asyncio.py
 
 
+Whitelisting custom errors
+^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. literalinclude:: ../examples/whitelisting_errors.py
+
+
+Blacklisting custom errors
+^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. literalinclude:: ../examples/blacklisting_errors.py
+
+
 Constant backoff strategy
 ^^^^^^^^^^^^^^^^^^^^^^^^^
 

@@ -4,6 +4,8 @@ riprova |Build Status| |PyPI| |Coverage Status| |Documentation Status| |Quality|
 ``riprova`` (meaning ``retry`` in Italian) is a small, general-purpose and versatile `Python`_ library
 providing retry mechanisms with multiple backoff strategies for failed operations.
 
+It's domain agnostic and can be used within any code base.
+
 For a brief introduction about backoff mechanisms for potential failed operations, `read this article`_.
 
 
@@ -13,9 +15,10 @@ Features
 -  Retry decorator for simple and idiomatic consumption.
 -  Simple Pythonic programmatic interface.
 -  Maximum retry timeout support.
--  Supports error whitelisting and custom error evaluator logic.
+-  Supports error `whitelisting`_ and `blacklisting`_.
+-  Supports custom `error evaluation`_ retry logic (useful to retry only in specific cases).
 -  Automatically retry operations on raised exceptions.
--  Supports asynchronous coroutines with both ``async/await`` and ``yield from`` syntax.
+-  Supports `asynchronous coroutines`_ with both ``async/await`` and ``yield from`` syntax.
 -  Configurable maximum number of retry attempts.
 -  Custom retry evaluator function, useful to determine when an operation failed or not.
 -  Highly configurable supporting max retries, timeouts or retry notifier callback.
@@ -65,6 +68,7 @@ API
 - riprova.FibonacciBackoff_
 - riprova.ExponentialBackoff_
 - riprova.ErrorWhitelist_
+- riprova.ErrorBlacklist_
 - riprova.add_whitelist_error_
 - riprova.RetryError_
 - riprova.RetryTimeoutError_
@@ -80,6 +84,7 @@ API
 .. _riprova.FibonacciBackoff: http://riprova.readthedocs.io/en/latest/api.html#riprova.FibonacciBackoff
 .. _riprova.ExponentialBackoff: http://riprova.readthedocs.io/en/latest/api.html#riprova.ExponentialBackoff
 .. _riprova.ErrorWhitelist: http://riprova.readthedocs.io/en/latest/api.html#riprova.ErrorWhitelist
+.. _riprova.ErrorBlacklist: http://riprova.readthedocs.io/en/latest/api.html#riprova.ErrorBlacklist
 .. _riprova.add_whitelist_error: http://riprova.readthedocs.io/en/latest/api.html#riprova.add_whitelist_error
 .. _riprova.RetryError: http://riprova.readthedocs.io/en/latest/api.html#riprova.RetryError
 .. _riprova.RetryTimeoutError: http://riprova.readthedocs.io/en/latest/api.html#riprova.RetryTimeoutError
@@ -193,7 +198,10 @@ MIT - Tomas Aparicio
 .. _Fibonacci backoff: http://riprova.readthedocs.io/en/latest/api.html#riprova.FibonacciBackoff
 .. _Exponential backoff: http://riprova.readthedocs.io/en/latest/api.html#riprova.ExponentialBackOff
 .. _ConstantBackoff: https://github.com/h2non/riprova/blob/master/riprova/strategies/constant.py
-
+.. _whitelisting: https://github.com/h2non/riprova/blob/master/examples/whitelisting_errors.py
+.. _blacklisting: https://github.com/h2non/riprova/blob/master/examples/blacklisting_errors.py
+.. _error evaluation: https://github.com/h2non/riprova/blob/master/examples/http_request.py
+.. _asynchronous coroutines: https://github.com/h2non/riprova/blob/master/examples/http_asyncio.py
 
 .. |Build Status| image:: https://travis-ci.org/h2non/riprova.svg?branch=master
    :target: https://travis-ci.org/h2non/riprova

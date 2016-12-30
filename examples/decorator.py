@@ -19,4 +19,4 @@ def mul2(x):
 
 # Run task
 result = mul2(2)
-print('Result:', result)
+print('Result: {}'.format(result))

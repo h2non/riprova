@@ -19,6 +19,7 @@ class ErrorWhitelist(object):
     # engine. User can mutate and extend this list via class method.
     WHITELIST = set([
         SystemExit,
+        IndexError,
         ImportError,
         SyntaxError,
         ReferenceError,
@@ -27,8 +28,7 @@ class ErrorWhitelist(object):
     ])
 
     def __init__(self, errors=None):
-        self._whitelist = set(errors if errors else
-                              ErrorWhitelist.WHITELIST.copy())
+        self._list = set(errors if errors else ErrorWhitelist.WHITELIST.copy())
 
     @property
     def errors(self):
@@ -39,7 +39,7 @@ class ErrorWhitelist(object):
             errors (list|tuple[Exception]): iterable containing errors to
                 whitelist.
         """
-        return self._whitelist
+        return self._list
 
     @errors.setter
     def errors(self, errors):
@@ -52,11 +52,11 @@ class ErrorWhitelist(object):
         if not isinstance(errors, (list, tuple)):
             raise TypeError('errors must be a list or tuple')
 
-        self._whitelist = set()
+        self._list = set()
         for err in errors:
             if not issubclass(err, BaseException):
                 raise TypeError('error must be a subclass of Exception')
-            self._whitelist.add(err)
+            self._list.add(err)
 
     def add(self, *errors):
         """
@@ -66,23 +66,49 @@ class ErrorWhitelist(object):
             *errors (Exception): variadic error classes to add.
         """
         # Cache current whitelist
-        whitelist = self._whitelist.copy()
+        whitelist = self._list.copy()
         # Delegate to attribute setter to run type validations
         self.errors = errors
         # Join whitelist with previous one
-        self._whitelist = whitelist | self._whitelist
+        self._list = whitelist | self._list
 
-    def iswhitelisted(self, error):
+    def isretry(self, error):
         """
         Checks if a given error object is whitelisted or not.
 
         Returns:
             bool
         """
-        return error and all([
-            any(isinstance(error, err) for err in self._whitelist),
+        return not all([
+            error is not None,
+            any(isinstance(error, err) for err in self._list),
             getattr(error, '__retry__', False) is False
         ])
+
+
+class ErrorBlacklist(ErrorWhitelist):
+    """
+    Provides errors blacklist used to determine those exception errors who
+    should be retried.
+
+    Implements the opposite behaviour to `ErrorWhitelist`.
+
+    Arguments:
+        errors (set|list|tuple[Exception]): optional list of error exceptions
+            classes to blacklist.
+
+    Attributes:
+        errors (list): list of blacklist errors.
+    """
+
+    def isretry(self, error):
+        """
+        Checks if a given error object is not whitelisted.
+
+        Returns:
+            bool
+        """
+        return not ErrorWhitelist.isretry(self, error)
 
 
 def add_whitelist_error(*errors):

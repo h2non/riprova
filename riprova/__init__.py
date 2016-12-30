@@ -3,7 +3,7 @@ from .retry import retry
 from .retrier import Retrier
 from .backoff import Backoff
 from .constants import PY_34
-from .whitelist import ErrorWhitelist, add_whitelist_error
+from .errors import ErrorWhitelist, ErrorBlacklist, add_whitelist_error
 from .strategies import *  # noqa
 from .exceptions import (RetryError, MaxRetriesExceeded,
                          RetryTimeoutError, NotRetriableError)
@@ -24,6 +24,7 @@ __all__ = (
     'FibonacciBackoff',
     'ExponentialBackOff',
     'ErrorWhitelist',
+    'ErrorBlacklist',
     'add_whitelist_error',
     'RetryError',
     'MaxRetriesExceeded',

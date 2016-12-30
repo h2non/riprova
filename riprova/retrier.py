@@ -3,7 +3,7 @@ import time
 from six import raise_from
 from .timing import now
 from .backoff import Backoff
-from .whitelist import ErrorWhitelist
+from .errors import ErrorWhitelist
 from .strategies import ConstantBackoff
 from .exceptions import MaxRetriesExceeded, RetryError, RetryTimeoutError
 
@@ -51,6 +51,9 @@ class Retrier(object):
     Attributes:
         whitelist (riprova.ErrorWhitelist): default error whitelist instance
             used to evaluate when.
+        blacklist (riprova.ErrorBlacklist): default error blacklist instance
+            used to evaluate when.
+            Blacklist and Whitelist are mutually exclusive.
         timeout (int): stores the maximum retries attempts timeout in
             milliseconds. Use `0` for no limit. Defaults to `0`.
         attempts (int): number of retry attempts being executed from last
@@ -101,8 +104,11 @@ class Retrier(object):
 
     """
 
-    # Stores the default error whitelist used for error retry evaluation
-    whitelist = ErrorWhitelist()
+    # Stores the default global error whitelist used for error retry evaluation
+    whitelist = None
+
+    # Blacklist is just a semantic alias to whitelist
+    blacklist = None
 
     def __init__(self,
                  timeout=0,
@@ -134,9 +140,13 @@ class Retrier(object):
         self.backoff = backoff or ConstantBackoff()
         # Function used to sleep. Defaults `time.sleep()`.
         self.sleep = sleep_fn or time.sleep
+        # Stores the default error whitelist used for error retry evaluation
+        self.whitelist = (Retrier.blacklist or
+                          Retrier.whitelist or
+                          ErrorWhitelist())
 
     def is_whitelisted_error(self, err):
-        return not self.whitelist.iswhitelisted(err)
+        return self.whitelist.isretry(err)
 
     def _call(self, fn, *args, **kw):
         """
@@ -171,6 +181,7 @@ class Retrier(object):
         return err
 
     def _timeout_error(self):
+        # Timeout error
         timeout_err = RetryTimeoutError('max timeout exceeded while retrying '
                                         'task: {}ms'.format(self.timeout))
         # Raise timeout error
