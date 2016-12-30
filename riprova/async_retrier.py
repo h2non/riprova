@@ -15,19 +15,6 @@ import asyncio  # noqa
 from paco import TimeoutLimit  # noqa
 
 
-def corowrap(fn):
-    """
-    Wraps a given function as a coroutine.
-
-    Arguments:
-        fn (function|coroutinefunction)
-
-    Returns:
-        coroutinefunction
-    """
-    return asyncio.coroutine(fn)
-
-
 class AsyncRetrier(Retrier):
     """
     AsyncRetrier implements an asynchronous corutine based operation retrier.
@@ -134,13 +121,13 @@ class AsyncRetrier(Retrier):
         # Maximum optional timeout in miliseconds. Use 0 for no limit
         self.timeout = timeout or 0
         # Stores optional evaluator function
-        self.evaluator = corowrap(evaluator) if evaluator else None
+        self.evaluator = asyncio.coroutine(evaluator) if evaluator else None
         # Stores the error evaluator function.
         self.error_evaluator = error_evaluator or self.is_whitelisted_error
         # Stores optional coroutine function to call on before very
         # retry operation. `on_retry` function accepts 2 arguments:
         # `err, next_try` and should return nothing.
-        self.on_retry = corowrap(on_retry) if on_retry else None
+        self.on_retry = asyncio.coroutine(on_retry) if on_retry else None
         # Backoff strategy to use. Defaults to `riprova.ConstantBackoff`.
         self.backoff = backoff or ConstantBackoff()
         # Function used to sleep. Defaults `asyncio.sleep()`.
