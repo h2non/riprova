@@ -21,6 +21,8 @@ class AsyncRetrier(Retrier):
 
     Only compatible with `asyncio` in Python 3.4+.
 
+    AsyncRetrier implements a synchronous and asynchronous context manager.
+
     Arguments:
         timeout (int): maximum optional timeout in miliseconds.
             Use `0` for no limit. Defaults to `0`.
@@ -94,6 +96,10 @@ class AsyncRetrier(Retrier):
         assert result == 16
         assert retrier.attempts == 0
         assert retrier.error == None
+
+        # Using the async context manager
+        async with riprova.AsyncRetrier() as retry:
+            await retry.run(task, 'foo', bar=1)
     """
 
     # Stores the default global error whitelist used for error retry evaluation
@@ -275,3 +281,11 @@ class AsyncRetrier(Retrier):
         # Otherwise run it with a time limited context
         with TimeoutLimit(self.timeout / 1000):
             return (yield from self._run(coro, *args, **kw))
+
+    @asyncio.coroutine
+    def __aenter__(self):
+        return self
+
+    @asyncio.coroutine
+    def __aexit__(self, error, trace, extra):
+        return self.__exit__(error, trace, extra)

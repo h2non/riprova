@@ -204,3 +204,20 @@ def test_retrier_istimeout():
 
     now = int(time.time() * 1000) - 2000
     assert Retrier(timeout=1000).istimeout(now) is True
+
+
+def test_retrier_context_manager(MagicMock):
+    iterable = (ValueError, NotImplementedError, RuntimeError, SyntaxError)
+    task = MagicMock(side_effect=iterable)
+
+    retrier = Retrier(backoff=ConstantBackoff(interval=1, retries=4))
+    with pytest.raises(SyntaxError):
+        with retrier as retry:
+            retry.run(task, 2, 4, foo='bar')
+
+    assert task.called
+    assert task.call_count == 4
+    task.assert_called_with(2, 4, foo='bar')
+
+    assert retrier.attempts == 3
+    assert isinstance(retrier.error, SyntaxError)

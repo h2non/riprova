@@ -222,3 +222,30 @@ def test_async_retrier_istimeout():
 
     now = int(time.time() * 1000) - 2000
     assert AsyncRetrier(timeout=1000).istimeout(now) is True
+
+
+@python34
+def test_async_retrier_context_manager(MagicMock, coro):
+    on_retry = MagicMock()
+    retrier = AsyncRetrier(timeout=250, on_retry=on_retry,
+                           backoff=ConstantBackoff(interval=100, retries=5))
+
+    @asyncio.coroutine
+    def run_context():
+        assert (yield from retrier.__aenter__()) is retrier
+
+        try:
+            yield from retrier.run(coro(10), 2, 4, foo='bar')
+        except:
+            yield from retrier.__aexit__(None, None, None)
+        else:
+            raise AssertionError('must raise exception')
+
+    run_coro(run_context())
+
+    assert on_retry.called
+    assert on_retry.call_count == 3
+
+    assert retrier.attempts >= 1
+    assert retrier.attempts < 4
+    assert isinstance(retrier.error, RuntimeError)

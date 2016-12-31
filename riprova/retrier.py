@@ -16,6 +16,8 @@ class Retrier(object):
     Additionally, you can subcribe to `retry` attempts via `on_retry` param,
     which accepts a binary function.
 
+    Retrier object also implements a context manager.
+
     Arguments:
         timeout (int): maximum optional timeout in miliseconds.
             Use `0` for no limit. Defaults to `0`.
@@ -101,6 +103,10 @@ class Retrier(object):
         assert result == 16
         assert retrier.attempts == 0
         assert retrier.error == None
+
+        # Using the context manager
+        with riprova.Retrier() as retry:
+            retry.run(task, 'foo', bar=1)
 
     """
 
@@ -292,3 +298,14 @@ class Retrier(object):
 
             # Sleep before next try
             self.sleep(float(delay) / 1000)  # Millisecs converted to secs
+
+    def __enter__(self):
+        # Reset state
+        self.error = None
+        self.attempts = 0
+        return self
+
+    def __exit__(self, error, trace, extra):
+        # Forward error, if needed
+        if error:
+            raise error
