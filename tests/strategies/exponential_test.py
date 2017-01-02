@@ -44,7 +44,7 @@ def test_exponential_backoff():
     assert backoff.current_interval == backoff.interval + 2500
 
     delay = backoff.next()
-    assert delay >= 4.5 and delay <= 5.0
+    assert delay >= 4 and delay <= 5.0
     assert backoff.current_interval == 6750.0
 
     delay = backoff.next()
