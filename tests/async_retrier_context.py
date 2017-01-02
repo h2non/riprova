@@ -3,7 +3,7 @@ import asyncio
 from riprova import AsyncRetrier, ConstantBackoff
 
 
-def test_async_retrier_context_manager(MagicMock, coro):
+def test_async_retrier_context_manager(MagicMock, coro, run_coro):
     on_retry = MagicMock()
     retrier = AsyncRetrier(timeout=.25, on_retry=on_retry,
                            backoff=ConstantBackoff(interval=.1, retries=5))
