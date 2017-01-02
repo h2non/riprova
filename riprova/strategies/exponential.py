@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
+import time
 import random
-from ..timing import now
 from ..backoff import Backoff
 from ..constants import INT_ERROR, POS_ERROR
 
@@ -21,7 +21,7 @@ class ExponentialBackOff(Backoff):
 
     For example, given the following parameters:
 
-    - interval = 200
+    - interval = 0.2
     - factor = 0.5
     - multiplier = 2
 
@@ -58,14 +58,14 @@ class ExponentialBackOff(Backoff):
     `ExponentialBackOff` is expected to run in a single-thread context.
 
     Arguments:
-        interval (int): interval time in milliseconds.
+        interval (int): interval time in seconds.
             Defaults to `500`.
         factor (int|float): multiplier factor for exponential retries.
             Defaults to `0.5`. It should be between `0` and `1` number range.
-        max_interval (int): max allowed internval in milliseconds.
+        max_interval (int): max allowed internval in seconds.
             Defaults to `60`.
-        max_elapsed (int): max elapsed total allowed time in milliseconds.
-            Defaults to `15` minutes == `15 * 60 * 1000` milliseconds.
+        max_elapsed (int): max elapsed total allowed time in seconds.
+            Defaults to `15` minutes == `15 * 60` seconds.
         multiplier (int|float): exponential multiplier.
             Defaults to `1.5`.
 
@@ -80,14 +80,14 @@ class ExponentialBackOff(Backoff):
     """
 
     def __init__(self,
-                 interval=500,
+                 interval=.5,
                  factor=0.5,
-                 max_interval=6000,
-                 max_elapsed=15 * 60 * 1000,
+                 max_interval=60,
+                 max_elapsed=15 * 60,
                  multiplier=1.5):
 
         # Assert valid params
-        assert isinstance(interval, int), INT_ERROR.format('interval')
+        assert isinstance(interval, (int, float)), INT_ERROR.format('interval')
         assert isinstance(multiplier, (int, float)), INT_ERROR.format('multiplier')  # noqa
         assert isinstance(factor, (int, float)), INT_ERROR.format('factor')
         assert isinstance(max_elapsed, int), INT_ERROR.format('max_elapsed')
@@ -95,13 +95,13 @@ class ExponentialBackOff(Backoff):
         assert interval >= 0, POS_ERROR.format('interval')
         assert multiplier >= 0, POS_ERROR.format('multiplier')
 
-        self.started = None  # start time in milliseconds
+        self.started = None  # start time in seconds
         self.multiplier = multiplier
-        self.max_elapsed = max_elapsed
-        self.max_interval = max_interval
+        self.max_elapsed = int(max_elapsed * 1000)
+        self.max_interval = int(max_interval * 1000)
         self.factor = min(max(factor, 0), 1)
-        self.interval = interval
-        self.current_interval = interval
+        self.interval = int(interval * 1000)
+        self.current_interval = self.interval
 
     @property
     def elapsed(self):
@@ -109,7 +109,7 @@ class ExponentialBackOff(Backoff):
         Returns the elapsed time since an `ExponentialBackOff` instance
         is created and is reset when `reset()` is called.
         """
-        return now() - self.started
+        return int(time.time() * 1000) - self.started
 
     def reset(self):
         """
@@ -121,16 +121,16 @@ class ExponentialBackOff(Backoff):
 
     def next(self):
         """
-        Returns the number of milliseconds to wait before the next try,
+        Returns the number of seconds to wait before the next try,
         otherwise returns `Backoff.STOP`, which indicates the max number
         of retry operations were reached.
 
         Returns:
-            int: time to wait in milliseconds before the next try.
+            int: time to wait in seconds before the next try.
         """
         # Store start time
         if self.started is None:
-            self.started = now()
+            self.started = int(time.time() * 1000)
 
         # Make sure we have not gone over the maximum elapsed time.
         if self.max_elapsed != 0 and self.elapsed > self.max_elapsed:
@@ -143,7 +143,7 @@ class ExponentialBackOff(Backoff):
         self._increment_interval()
 
         # Return interval
-        return interval
+        return round(interval / 1000, 2)
 
     def _increment_interval(self):
         """
@@ -163,7 +163,7 @@ class ExponentialBackOff(Backoff):
             [factor * current_interval, factor * current_interval]
 
         Returns:
-            int: interval milliseconds to wait before next try.
+            int: interval seconds to wait before next try.
         """
         rand = random.random()
         delta = self.factor * rand

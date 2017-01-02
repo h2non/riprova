@@ -24,7 +24,7 @@ class FibonacciBackoff(Backoff):
         initial (int): initial number for fibonacci serie.
             Detaults to `1`.
         multiper (int): fibonacci serie number time multiplier.
-            Defaults to `100`.
+            Defaults to `1`.
 
     Raises:
         AssertionError: in case of invalid params.
@@ -36,7 +36,7 @@ class FibonacciBackoff(Backoff):
             return x * x
     """
 
-    def __init__(self, retries=10, initial=1, multiplier=100):
+    def __init__(self, retries=10, initial=1, multiplier=1):
         # Validate input params
         assert isinstance(retries, int), INT_ERROR.format('retries')
         assert isinstance(initial, int), INT_ERROR.format('initial')
@@ -57,7 +57,7 @@ class FibonacciBackoff(Backoff):
         """
         Returns the next Fibonacci number in the serie, multiplied by
         the current configured multiplier, typically `100`, for time
-        milliseconds adjust.
+        seconds adjust.
         """
         current = self.prev + self.current
         self.prev = self.current
@@ -74,12 +74,12 @@ class FibonacciBackoff(Backoff):
 
     def next(self):
         """
-        Returns the number of milliseconds to wait before the next try,
+        Returns the number of seconds to wait before the next try,
         otherwise returns `Backoff.STOP`, which indicates the max number
         of retry operations were reached.
 
         Returns:
-            int: time to wait in milliseconds before the next try.
+            float: time to wait in seconds before the next try.
         """
         # Verify we do not exceeded the max retries
         if self.max_retries > 0 and self.retries >= self.max_retries:

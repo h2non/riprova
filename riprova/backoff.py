@@ -29,12 +29,12 @@ class Backoff(with_metaclass(abc.ABCMeta, object)):
     @abc.abstractmethod
     def next(self):
         """
-        Returns the number of milliseconds to wait before the next try,
+        Returns the number of seconds to wait before the next try,
         otherwise returns `Backoff.STOP`, which indicates the max number
         of retry operations were reached.
 
         Backoff strategies must implement this method.
 
         Returns:
-            int: time to wait in milliseconds before the next try.
+            int: time to wait in seconds before the next try.
         """

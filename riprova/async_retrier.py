@@ -12,7 +12,6 @@ if not PY_34:  # pragma: no cover
     raise RuntimeError('cannot import async_retrier module in Python <= 3.4')
 
 import asyncio  # noqa
-from paco import TimeoutLimit  # noqa
 
 
 class AsyncRetrier(Retrier):
@@ -24,8 +23,8 @@ class AsyncRetrier(Retrier):
     AsyncRetrier implements a synchronous and asynchronous context manager.
 
     Arguments:
-        timeout (int): maximum optional timeout in miliseconds.
-            Use `0` for no limit. Defaults to `0`.
+        timeout (int|float): maximum optional timeout in miliseconds.
+            Use `None` for no limit. Defaults to `None`.
         backoff (riprova.Backoff): optional backoff strategy to use.
             Defaults to `riprova.ConstantBackoff`.
         evaluator (function): optional evaluator function used to determine
@@ -54,6 +53,8 @@ class AsyncRetrier(Retrier):
             and should return nothing.
         sleep_coro (coroutinefunction): optional coroutine function used to
             sleep. Defaults to `asyncio.sleep`.
+        loop (asyncio.BaseException): event loop to use.
+            Defaults to `asyncio.get_event_loop()`.
 
     Attributes:
         whitelist (riprova.ErrorWhitelist): default error whitelist instance
@@ -62,7 +63,7 @@ class AsyncRetrier(Retrier):
             used to evaluate when.
             Blacklist and Whitelist are mutually exclusive.
         timeout (int): stores the maximum retries attempts timeout in
-            milliseconds. Defaults to `0`.
+            seconds. Use `None` for no timeout. Defaults to `None`.
         attempts (int): number of retry attempts being executed from last
             `run()` method call.
         error (Exception): stores the latest generated error.
@@ -84,7 +85,7 @@ class AsyncRetrier(Retrier):
     Usage::
 
         retrier = riprova.AsyncRetrier(
-            timeout=10 * 1000,
+            timeout=10,
             backoff=riprova.FibonacciBackoff(retries=5))
 
         async def task(x):
@@ -109,23 +110,27 @@ class AsyncRetrier(Retrier):
     blacklist = None
 
     def __init__(self,
-                 timeout=0,
+                 timeout=None,
                  backoff=None,
                  evaluator=None,
                  error_evaluator=None,
                  on_retry=None,
-                 sleep_coro=None):
+                 sleep_coro=None,
+                 loop=None):
 
         # Assert input params
-        assert isinstance(timeout, int), 'timeout must be an int'
-        assert timeout >= 0, 'timeout cannot be a negative number'
+        if timeout is not None:
+            assert isinstance(timeout, (int, float)), 'timeout must be number'
+            assert timeout >= 0, 'timeout cannot be a negative number'
 
+        # Event loop to use
+        self.loop = loop or asyncio.get_event_loop()
         # Stores number of retry attempts
         self.attempts = 0
         # Stores latest error
         self.error = None
         # Maximum optional timeout in miliseconds. Use 0 for no limit
-        self.timeout = timeout or 0
+        self.timeout = timeout or None
         # Stores optional evaluator function
         self.evaluator = asyncio.coroutine(evaluator) if evaluator else None
         # Stores the error evaluator function.
@@ -212,7 +217,7 @@ class AsyncRetrier(Retrier):
             yield from self.on_retry(err, delay)
 
         # Sleep before the next try attempt
-        yield from self.sleep(delay / 1000)
+        yield from self.sleep(delay)
 
     @asyncio.coroutine
     def _run(self, coro, *args, **kw):
@@ -275,12 +280,11 @@ class AsyncRetrier(Retrier):
         self.attempts = 0
 
         # If not timeout defined, run the coroutine function
-        if self.timeout == 0:
-            return (yield from self._run(coro, *args, **kw))
-
-        # Otherwise run it with a time limited context
-        with TimeoutLimit(self.timeout / 1000):
-            return (yield from self._run(coro, *args, **kw))
+        return (yield from asyncio.wait_for(
+            self._run(coro, *args, **kw),
+            self.timeout,
+            loop=self.loop
+        ))
 
     @asyncio.coroutine
     def __aenter__(self):

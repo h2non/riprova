@@ -10,23 +10,23 @@ def test_fibonacci_backoff_defaults():
     assert backoff.current == 1
     assert backoff.initial == 1
     assert backoff.max_retries == 10
-    assert backoff.multiplier == 100
+    assert backoff.multiplier == 1
 
 
 def test_fibonacci_backoff_params():
-    backoff = FibonacciBackoff(initial=2, retries=5, multiplier=1000)
+    backoff = FibonacciBackoff(initial=2, retries=5, multiplier=2)
     assert backoff.prev == 0
     assert backoff.retries == 0
     assert backoff.current == 2
     assert backoff.initial == 2
     assert backoff.max_retries == 5
-    assert backoff.multiplier == 1000
+    assert backoff.multiplier == 2
 
 
 def test_fibonacci_backoff():
     backoff = FibonacciBackoff()
     assert backoff.retries == 0
-    assert backoff.multiplier == 100
+    assert backoff.multiplier == 1
     assert backoff.max_retries == 10
     assert backoff.current == 1
 
@@ -49,7 +49,7 @@ def test_fibonacci_backoff_max_retries():
     backoff = FibonacciBackoff(retries=5)
     assert backoff.retries == 0
     assert backoff.current == 1
-    assert backoff.multiplier == 100
+    assert backoff.multiplier == 1
     assert backoff.max_retries == 5
 
     for i in range(5):

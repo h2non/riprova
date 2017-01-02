@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 import time
 from six import raise_from
-from .timing import now
 from .backoff import Backoff
 from .errors import ErrorWhitelist
 from .strategies import ConstantBackoff
@@ -57,7 +56,7 @@ class Retrier(object):
             used to evaluate when.
             Blacklist and Whitelist are mutually exclusive.
         timeout (int): stores the maximum retries attempts timeout in
-            milliseconds. Use `0` for no limit. Defaults to `0`.
+            seconds. Use `0` for no limit. Defaults to `0`.
         attempts (int): number of retry attempts being executed from last
             `run()` method call.
         error (Exception): stores the latest generated error.
@@ -125,15 +124,16 @@ class Retrier(object):
                  sleep_fn=None):
 
         # Assert input params
-        assert isinstance(timeout, int), 'timeout must be an int'
-        assert timeout >= 0, 'timeout cannot be a negative number'
+        if timeout is not None:
+            assert isinstance(timeout, (float, int)), 'timeout must be number'
+            assert timeout >= 0, 'timeout cannot be a negative number'
 
         # Stores number of retry attempts
         self.attempts = 0
         # Stores latest error
         self.error = None
         # Maximum optional timeout in miliseconds. Use 0 for no limit
-        self.timeout = timeout
+        self.timeout = timeout or 0
         # Stores optional function to call on before very retry operation.
         # `on_retry` function accepts 2 arguments: `err, next_try` and
         # should return nothing.
@@ -189,7 +189,7 @@ class Retrier(object):
     def _timeout_error(self):
         # Timeout error
         timeout_err = RetryTimeoutError('max timeout exceeded while retrying '
-                                        'task: {}ms'.format(self.timeout))
+                                        'task: {}s'.format(self.timeout))
         # Raise timeout error
         raise_from(timeout_err, self.error)
 
@@ -203,7 +203,10 @@ class Retrier(object):
         Returns:
             bool: `True` if timeout exceeded, otherwise `False`.
         """
-        return now() - start + 1 > self.timeout > 0
+        if self.timeout is None or self.timeout == 0:
+            return False
+
+        return time.time() - start > self.timeout > 0
 
     def _handle_error(self, err):
         """
@@ -271,12 +274,13 @@ class Retrier(object):
         self.backoff.reset()
 
         # Task initialization time for timeout tracking
-        start = now()
+        start = time.time()
 
         # Run operation in a infinitive loop until the task succeeded or
         # and max retry attempts are reached.
         while True:
             # Ensure we do not exceeded the max timeout
+            print('>>', start, self.istimeout(start))
             if self.istimeout(start):
                 return self._timeout_error()
 
@@ -297,7 +301,7 @@ class Retrier(object):
             self.attempts += 1
 
             # Sleep before next try
-            self.sleep(float(delay) / 1000)  # Millisecs converted to secs
+            self.sleep(delay)
 
     def __enter__(self):
         # Reset state

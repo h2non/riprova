@@ -17,8 +17,8 @@ class ConstantBackoff(Backoff):
     ConstantBackoff is expected to run in a single-thread context.
 
     Arguments:
-        interval (int): wait interval before retry in milliseconds.
-            Use `0` for no wait. Defaults to `100`.
+        interval (int|float): wait interval before retry in seconds.
+            Use `0` for no wait. Defaults to `0.1` = `100` milliseconds.
         retries (int): maximum number of retries attempts.
             Use `0` for no limit. Defaults to `10`.
 
@@ -32,9 +32,9 @@ class ConstantBackoff(Backoff):
             return x * x
     """
 
-    def __init__(self, interval=100, retries=10):
+    def __init__(self, interval=.1, retries=10):
         assert isinstance(retries, int), INT_ERROR.format('retries')
-        assert isinstance(interval, int), INT_ERROR.format('interval')
+        assert isinstance(interval, (int, float)), INT_ERROR.format('interval')
         assert retries >= 0, POS_ERROR.format('retries')
         assert interval >= 0, POS_ERROR.format('interval')
 
@@ -50,12 +50,12 @@ class ConstantBackoff(Backoff):
 
     def next(self):
         """
-        Returns the number of milliseconds to wait before the next try,
+        Returns the number of seconds to wait before the next try,
         otherwise returns `Backoff.STOP`, which indicates the max number
         of retry operations were reached.
 
         Returns:
-            int: time to wait in milliseconds before the next try.
+            float: time to wait in seconds before the next try.
         """
         # Verify we do not exceeded the max retries
         if self.retries > 0 and self.pending_retries == 0:

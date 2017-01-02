@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-import inspect
 import functools
 from .constants import PY_34
 from .retrier import Retrier
@@ -16,8 +15,7 @@ def iscallable(x):
     Returns `True` if the given value is a callable object.
     """
     return any([
-        inspect.isfunction(x),
-        inspect.ismethod(x),
+        hasattr(x, '__call__'),
         asyncio and asyncio.iscoroutinefunction(x)
     ])
 
@@ -42,7 +40,7 @@ def retry(timeout=0, backoff=None, evaluator=None,
     This function as decorator.
 
     Arguments:
-        timeout (int): optional maximum timeout in milliseconds.
+        timeout (int): optional maximum timeout in seconds.
             Use `0` for no limit. Defaults to `0`.
         backoff (riprova.Backoff): optional backoff strategy to use.
             Defaults to `riprova.ConstantBackoff`.
@@ -61,8 +59,8 @@ def retry(timeout=0, backoff=None, evaluator=None,
         sleep_fn (function|coroutinefunction): optional sleep function to be
             used before retry attempts.
             Defaults to `time.sleep()` or `asyncio.sleep()`.
-        *kwargs (mixed): keyword variadic arguments to pass to `Retrier`
-            class constructor.
+        *kwargs (mixed): keyword variadic arguments to pass to `Retrier` or
+            `AsyncRetrier` class constructors.
 
     Raises:
         TypeError: if function is not a function or coroutine function.

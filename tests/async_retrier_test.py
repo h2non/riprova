@@ -45,7 +45,7 @@ def test_async_retrier_defaults():
     retrier = AsyncRetrier()
     assert retrier.error is None
     assert retrier.attempts == 0
-    assert retrier.timeout == 0
+    assert retrier.timeout is None
     assert retrier.on_retry is None
     assert retrier.evaluator is None
     assert retrier.sleep == asyncio.sleep
@@ -64,12 +64,12 @@ def test_async_retrier_custom():
     def evaluator(): pass
 
     backoff = ConstantBackoff()
-    retrier = AsyncRetrier(timeout=1000, on_retry=on_retry,
+    retrier = AsyncRetrier(timeout=1, on_retry=on_retry,
                            sleep_coro=sleep, evaluator=evaluator,
                            backoff=backoff)
     assert retrier.error is None
     assert retrier.attempts == 0
-    assert retrier.timeout == 1000
+    assert retrier.timeout == 1
     assert retrier.on_retry is on_retry
     assert retrier.evaluator is evaluator
     assert retrier.sleep == sleep
@@ -202,8 +202,8 @@ def test_async_retrier_run_max_timeout(MagicMock, coro):
     on_retry = MagicMock()
     task = coro(10)
 
-    retrier = AsyncRetrier(timeout=250, on_retry=on_retry,
-                           backoff=ConstantBackoff(interval=100))
+    retrier = AsyncRetrier(timeout=.25, on_retry=on_retry,
+                           backoff=ConstantBackoff(interval=.1))
 
     with pytest.raises(asyncio.TimeoutError):
         run_coro(retrier.run(task, 2, 4, foo=6))
@@ -220,15 +220,15 @@ def test_async_retrier_run_max_timeout(MagicMock, coro):
 def test_async_retrier_istimeout():
     assert AsyncRetrier().istimeout(1234) is False
 
-    now = int(time.time() * 1000) - 2000
-    assert AsyncRetrier(timeout=1000).istimeout(now) is True
+    now = time.time() - 100
+    assert AsyncRetrier(timeout=1).istimeout(now) is True
 
 
 @python34
 def test_async_retrier_context_manager(MagicMock, coro):
     on_retry = MagicMock()
-    retrier = AsyncRetrier(timeout=250, on_retry=on_retry,
-                           backoff=ConstantBackoff(interval=100, retries=5))
+    retrier = AsyncRetrier(timeout=.25, on_retry=on_retry,
+                           backoff=ConstantBackoff(interval=.1, retries=5))
 
     @asyncio.coroutine
     def run_context():

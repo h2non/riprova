@@ -6,21 +6,21 @@ from riprova import ConstantBackoff
 def test_constant_backoff_defaults():
     backoff = ConstantBackoff()
     assert backoff.retries == 10
-    assert backoff.interval == 100
+    assert backoff.interval == .1
     assert backoff.pending_retries == backoff.retries
 
 
 def test_constant_backoff_params():
-    backoff = ConstantBackoff(interval=500, retries=5)
+    backoff = ConstantBackoff(interval=.5, retries=5)
     assert backoff.retries == 5
-    assert backoff.interval == 500
+    assert backoff.interval == .5
     assert backoff.pending_retries == backoff.retries
 
 
 def test_constant_backoff():
     backoff = ConstantBackoff()
     assert backoff.retries == 10
-    assert backoff.interval == 100
+    assert backoff.interval == .1
 
     delay = backoff.next()
     assert delay == backoff.interval
@@ -32,14 +32,14 @@ def test_constant_backoff():
 
     backoff.reset()
     assert backoff.retries == 10
-    assert backoff.interval == 100
+    assert backoff.interval == .1
     assert backoff.pending_retries == backoff.retries
 
 
 def test_constant_backoff_max_retries():
     backoff = ConstantBackoff(retries=5)
     assert backoff.retries == 5
-    assert backoff.interval == 100
+    assert backoff.interval == .1
     assert backoff.pending_retries == backoff.retries
 
     for i in range(5):

@@ -24,11 +24,11 @@ def test_retrier_custom():
     def evaluator(): pass  # noqa
 
     backoff = ConstantBackoff()
-    retrier = Retrier(timeout=1000, on_retry=on_retry,
+    retrier = Retrier(timeout=1, on_retry=on_retry,
                       sleep_fn=sleep, evaluator=evaluator, backoff=backoff)
     assert retrier.error is None
     assert retrier.attempts == 0
-    assert retrier.timeout == 1000
+    assert retrier.timeout == 1
     assert retrier.on_retry is on_retry
     assert retrier.evaluator is evaluator
     assert retrier.sleep == sleep
@@ -186,31 +186,31 @@ def test_retrier_run_max_timeout(MagicMock):
     iterable = (ValueError, NotImplementedError, RuntimeError, Exception)
     task = MagicMock(side_effect=iterable)
 
-    retrier = Retrier(timeout=200, backoff=ConstantBackoff(interval=120))
+    retrier = Retrier(timeout=0.3, backoff=ConstantBackoff(interval=0.12))
 
     with pytest.raises(RetryTimeoutError):
         retrier.run(task, 2, 4, foo='bar')
 
     assert task.called
-    assert task.call_count >= 1
+    assert task.call_count >= 2
     task.assert_called_with(2, 4, foo='bar')
 
-    assert retrier.attempts == 2
+    assert retrier.attempts in range(2, 4)
     assert isinstance(retrier.error, (NotImplementedError, RuntimeError))
 
 
 def test_retrier_istimeout():
     assert Retrier().istimeout(1234) is False
 
-    now = int(time.time() * 1000) - 2000
-    assert Retrier(timeout=1000).istimeout(now) is True
+    now = time.time() - 100
+    assert Retrier(timeout=1).istimeout(now) is True
 
 
 def test_retrier_context_manager(MagicMock):
     iterable = (ValueError, NotImplementedError, RuntimeError, SyntaxError)
     task = MagicMock(side_effect=iterable)
 
-    retrier = Retrier(backoff=ConstantBackoff(interval=1, retries=4))
+    retrier = Retrier(backoff=ConstantBackoff(interval=.1, retries=4))
     with pytest.raises(SyntaxError):
         with retrier as retry:
             retry.run(task, 2, 4, foo='bar')
