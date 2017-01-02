@@ -6,7 +6,7 @@ calls = 0
 
 
 # Register retriable operation with custom evaluator
-@riprova.retry(timeout=300)
+@riprova.retry(timeout=0.3)
 def mul2(x):
     global calls
 

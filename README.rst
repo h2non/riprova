@@ -116,7 +116,7 @@ You can see more featured examples from the `documentation` site.
     def task():
         """Retry operation if it fails using exponential backoff"""
 
-    @riprova.retry(timeout=10 * 1000)
+    @riprova.retry(timeout=10)
     def task():
         """Raises a TimeoutError if the retry loop exceeds from 10 seconds"""
 

@@ -9,7 +9,7 @@ retries = 5
 
 
 # Register retriable operation with custom evaluator
-@riprova.retry(backoff=riprova.ConstantBackoff(interval=500, retries=retries))
+@riprova.retry(backoff=riprova.ConstantBackoff(interval=.5, retries=retries))
 def mul2(x):
     global calls
 

@@ -5,11 +5,11 @@ import riprova
 def task():
     """Retry operation if it fails with constant backoff"""
 
-@riprova.retry(backoff=riprova.ExponentialBackOff(factor=0.5))
+@riprova.retry(backoff=riprova.ExponentialBackOff(factor=.5))
 def task():
     """Retry operation if it fails using exponential backoff"""
 
-@riprova.retry(timeout=10000)
+@riprova.retry(timeout=10)
 def task():
     """Raises a TimeoutError if the retry loop exceeds from 10 seconds"""
 
