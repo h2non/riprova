@@ -1,6 +1,15 @@
 History
 =======
 
+v0.2.0 / 2017-01-02
+-------------------
+
+* feat(core): use seconds as default time unit (introduces API breaking changes)
+* refactor(examples): update examples to use new time unit
+* feat(contextmanager): adds context manager support
+* feat(examples): add context manager example
+* feat: add context managers support
+
 v0.1.3 / 2016-12-30
 -------------------
 
