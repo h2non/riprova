@@ -291,5 +291,5 @@ class AsyncRetrier(Retrier):
         return self
 
     @asyncio.coroutine
-    def __aexit__(self, error, trace, extra):
-        return self.__exit__(error, trace, extra)
+    def __aexit__(self, exc_type, exc_value, traceback):
+        return self.__exit__(exc_type, exc_value, traceback)

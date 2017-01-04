@@ -280,7 +280,6 @@ class Retrier(object):
         # and max retry attempts are reached.
         while True:
             # Ensure we do not exceeded the max timeout
-            print('>>', start, self.istimeout(start))
             if self.istimeout(start):
                 return self._timeout_error()
 
@@ -309,7 +308,7 @@ class Retrier(object):
         self.attempts = 0
         return self
 
-    def __exit__(self, error, trace, extra):
+    def __exit__(self, exc_type, exc_value, traceback):
         # Forward error, if needed
-        if error:
-            raise error
+        if exc_type:
+            raise exc_type
