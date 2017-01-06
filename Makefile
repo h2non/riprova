@@ -45,5 +45,7 @@ release: clean bump push-tag publish
 
 publish:
 	@echo "$(OK_COLOR)==> Releasing package ...$(NO_COLOR)"
-	@rm -rf dist
-	@python setup.py sdist bdist_wheel register upload
+	@python setup.py register
+	@python setup.py sdist upload
+	@python setup.py bdist_wheel --universal upload
+	@rm -fr build dist .egg riprova.egg-info
