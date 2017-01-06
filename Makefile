@@ -45,4 +45,5 @@ release: clean bump push-tag publish
 
 publish:
 	@echo "$(OK_COLOR)==> Releasing package ...$(NO_COLOR)"
-	@python setup.py sdist register upload
+	@rm -rf dist
+	@python setup.py sdist bdist_wheel register upload
