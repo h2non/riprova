@@ -117,7 +117,7 @@ def retry(timeout=0, backoff=None, evaluator=None,
         _timeout = timeout if decorated else 0
 
         @functools.wraps(fn)
-        def wrapper(*args, **kw):
+        def wrapper(*args, **_kw):
             # Otherwise return recursive currier function
             retrier = RetrierClass(backoff=backoff,
                                    timeout=_timeout,
@@ -129,7 +129,7 @@ def retry(timeout=0, backoff=None, evaluator=None,
             retry_runner = functools.partial(retrier.run, fn)
 
             # Run original function via retry safe runner
-            return retry_runner(*args, **kw)
+            return retry_runner(*args, **_kw)
 
         # Return retry wrapper function
         return wrapper
