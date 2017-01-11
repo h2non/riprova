@@ -125,11 +125,8 @@ def retry(timeout=0, backoff=None, evaluator=None,
                                    error_evaluator=error_evaluator,
                                    on_retry=on_retry, **kw)
 
-            # Return partial function application
-            retry_runner = functools.partial(retrier.run, fn)
-
             # Run original function via retry safe runner
-            return retry_runner(*args, **_kw)
+            return retrier.run(fn, *args, **_kw)
 
         # Return retry wrapper function
         return wrapper
