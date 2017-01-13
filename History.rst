@@ -2,6 +2,14 @@
 History
 =======
 
+v0.2.3 / 2017-01-13
+-------------------
+
+* refactor(retry): remove unnecessary partial function
+* fix(retry): rename keyword param for partial application
+* feat(docs): improve description
+* refactor(Makefile): update publish task
+
 v0.2.2 / 2017-01-06
 -------------------
 
