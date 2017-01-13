@@ -65,6 +65,7 @@ setup(
     name='riprova',
     version=version,
     author='Tomas Aparicio',
+    author_email='tomas+python@aparicio.me',
     description=(
         'Small and versatile library to retry failed operations using '
         'different backoff strategies'
