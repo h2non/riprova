@@ -13,6 +13,12 @@ Usage as decorator
 .. literalinclude:: ../examples/decorator.py
 
 
+Usage as context manager
+^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. literalinclude:: ../examples/context_manager.py
+
+
 Timeout retry cycle limit
 ^^^^^^^^^^^^^^^^^^^^^^^^^
 
