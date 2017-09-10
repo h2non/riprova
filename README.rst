@@ -20,7 +20,6 @@ Features
 -  Automatically retry operations on raised exceptions.
 -  Supports `asynchronous coroutines`_ with both ``async/await`` and ``yield from`` syntax.
 -  Configurable maximum number of retry attempts.
--  Custom retry evaluator function, useful to determine when an operation failed or not.
 -  Highly configurable supporting max retries, timeouts or retry notifier callback.
 -  Built-in backoff strategies: constant, `fibonacci`_ and `exponential`_ backoffs.
 -  Supports sync/async context managers.
