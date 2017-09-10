@@ -24,7 +24,7 @@ Features
 -  Built-in backoff strategies: constant, `fibonacci`_ and `exponential`_ backoffs.
 -  Supports sync/async context managers.
 -  Pluggable custom backoff strategies.
--  Lightweight library with zero embedding cost.
+-  Lightweight library with almost zero embedding cost.
 -  Works with Python +2.6, 3.0+ and PyPy.
 
 
