@@ -90,7 +90,7 @@ class ExponentialBackOff(Backoff):
         assert isinstance(interval, (int, float)), INT_ERROR.format('interval')
         assert isinstance(multiplier, (int, float)), INT_ERROR.format('multiplier')  # noqa
         assert isinstance(factor, (int, float)), INT_ERROR.format('factor')
-        assert isinstance(max_elapsed, (int, float)), INT_ERROR.format('max_elapsed')
+        assert isinstance(max_elapsed, (int, float)), INT_ERROR.format('max_elapsed') # noqa
         assert isinstance(max_interval, int), INT_ERROR.format('max_interval')
         assert interval >= 0, POS_ERROR.format('interval')
         assert multiplier >= 0, POS_ERROR.format('multiplier')
