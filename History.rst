@@ -2,6 +2,11 @@
 History
 =======
 
+v0.2.4 / 2018-03-20
+-------------------
+
+* merge(#14): Allow subsecond maxtimes for ExponentialBackoff
+
 v0.2.3 / 2017-01-13
 -------------------
 
