@@ -5,6 +5,6 @@ import pytest
 def MagicMock():
     try:
         from unittest.mock import MagicMock
-    except:
+    except Exception as error:
         from mock import MagicMock
     return MagicMock

@@ -14,7 +14,7 @@ def test_async_retrier_context_manager(MagicMock, coro, run_coro):
 
         try:
             yield from retrier.run(coro(10), 2, 4, foo='bar')  # noqa
-        except:
+        except Exception as error:
             yield from retrier.__aexit__(None, None, None)  # noqa
         else:
             raise AssertionError('must raise exception')

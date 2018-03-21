@@ -7,7 +7,7 @@ from riprova.constants import PY_34
 try:
     import asyncio
     from riprova import AsyncRetrier
-except:
+except Exception as error:
     asyncio, AsyncRetrier = None, None
 
 # Require Python 3.4+
