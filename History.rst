@@ -2,6 +2,20 @@
 History
 =======
 
+v0.2.5 / 2018-03-21
+-------------------
+
+* Merge pull request #15 from jstasiak/allow-newer-six
+* Allow newer six
+* feat(History): update changes
+
+v0.2.5 / 2018-03-21
+------------------
+
+* Merge pull request #15 from jstasiak/allow-newer-six
+* Allow newer six
+* feat(History): update changes
+
 v0.2.4 / 2018-03-20
 -------------------
 

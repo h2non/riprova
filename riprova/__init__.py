@@ -13,7 +13,7 @@ __author__ = 'Tomas Aparicio'
 __license__ = 'MIT'
 
 # Current package version
-__version__ = '0.2.4'
+__version__ = '0.2.5'
 
 # Explicit symbols to export
 __all__ = (
