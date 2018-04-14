@@ -1,6 +1,8 @@
 
-History
-=======
+v0.2.6 / 2018-04-14
+-------------------
+
+* fix(#17): handle as legit retriable error Timeout exceptions.
 
 v0.2.5 / 2018-03-21
 -------------------
