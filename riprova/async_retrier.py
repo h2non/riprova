@@ -235,10 +235,6 @@ class AsyncRetrier(Retrier):
             except asyncio.CancelledError as _err:
                 err = _err
 
-            # Collect timeout error
-            except asyncio.TimeoutError as _err:
-                err = _err
-
             # Handle any other exception error
             except Exception as _err:
                 yield from self._handle_error(_err)
