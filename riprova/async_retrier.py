@@ -23,7 +23,7 @@ class AsyncRetrier(Retrier):
     AsyncRetrier implements a synchronous and asynchronous context manager.
 
     Arguments:
-        timeout (int|float): maximum optional timeout in miliseconds.
+        timeout (int|float): maximum optional timeout in milliseconds.
             Use `None` for no limit. Defaults to `None`.
         backoff (riprova.Backoff): optional backoff strategy to use.
             Defaults to `riprova.ConstantBackoff`.
@@ -39,7 +39,7 @@ class AsyncRetrier(Retrier):
         error_evaluator (function|coroutinefunction): optional evaluator
             function used to determine when a task raised exception should
             be proccesed as legit error and therefore retried or, otherwise,
-            treated as whitelist error, stoping the retry loop and re-raising
+            treated as whitelist error, stopping the retry loop and re-raising
             the exception to the task consumer.
             This provides high versatility to developers in order to compose
             any exception, for instance. Evaluator is an unary
@@ -129,7 +129,7 @@ class AsyncRetrier(Retrier):
         self.attempts = 0
         # Stores latest error
         self.error = None
-        # Maximum optional timeout in miliseconds. Use 0 for no limit
+        # Maximum optional timeout in milliseconds. Use 0 for no limit
         self.timeout = timeout or None
         # Stores optional evaluator function
         self.evaluator = asyncio.coroutine(evaluator) if evaluator else None
@@ -250,7 +250,7 @@ class AsyncRetrier(Retrier):
     def run(self, coro, *args, **kw):
         """
         Runs the given coroutine function in a retry loop until the operation
-        is completed successfully or maximum retries attemps are reached.
+        is completed successfully or maximum retries attempts are reached.
 
         Arguments:
             coro (coroutinefunction): coroutine function to retry.

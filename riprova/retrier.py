@@ -12,13 +12,13 @@ class Retrier(object):
     Implements a simple function retry mechanism with configurable backoff
     strategy and task timeout limit handler.
 
-    Additionally, you can subcribe to `retry` attempts via `on_retry` param,
+    Additionally, you can subscribe to `retry` attempts via `on_retry` param,
     which accepts a binary function.
 
     Retrier object also implements a context manager.
 
     Arguments:
-        timeout (int): maximum optional timeout in miliseconds.
+        timeout (int): maximum optional timeout in milliseconds.
             Use `0` for no limit. Defaults to `0`.
         backoff (riprova.Backoff): optional backoff strategy to use.
             Defaults to `riprova.ConstantBackoff`.
@@ -34,7 +34,7 @@ class Retrier(object):
         error_evaluator (function): optional evaluator function used to
             determine when a task raised exception should be proccesed as
             legit error and therefore retried or, otherwise, treated as
-            whitelist error, stoping the retry loop and re-raising the
+            whitelist error, stopping the retry loop and re-raising the
             exception to the task consumer.
             This provides high versatility to developers in order to compose
             any exception, for instance. Evaluator is an unary
@@ -132,7 +132,7 @@ class Retrier(object):
         self.attempts = 0
         # Stores latest error
         self.error = None
-        # Maximum optional timeout in miliseconds. Use 0 for no limit
+        # Maximum optional timeout in milliseconds. Use 0 for no limit
         self.timeout = timeout or 0
         # Stores optional function to call on before very retry operation.
         # `on_retry` function accepts 2 arguments: `err, next_try` and
@@ -198,7 +198,7 @@ class Retrier(object):
         Verifies if the current timeout.
 
         Arguments:
-            start (int): start UNIX time in miliseconds.
+            start (int): start UNIX time in milliseconds.
 
         Returns:
             bool: `True` if timeout exceeded, otherwise `False`.
@@ -250,7 +250,7 @@ class Retrier(object):
     def run(self, fn, *args, **kw):
         """
         Runs the given function in a retry loop until the operation is
-        completed successfully or maximum retries attemps are reached.
+        completed successfully or maximum retries attempts are reached.
 
         Arguments:
             fn (function): operation to retry.

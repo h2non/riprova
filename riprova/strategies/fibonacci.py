@@ -21,9 +21,9 @@ class FibonacciBackoff(Backoff):
     Arguments:
         retries (int): maximum number of retries.
             Use `0` for no limit. Defaults to `10`.
-        initial (int): initial number for fibonacci serie.
+        initial (int): initial number for fibonacci series.
             Detaults to `1`.
-        multiper (int): fibonacci serie number time multiplier.
+        multiper (int): fibonacci series number time multiplier.
             Defaults to `1`.
 
     Raises:
@@ -55,7 +55,7 @@ class FibonacciBackoff(Backoff):
     @property
     def interval(self):
         """
-        Returns the next Fibonacci number in the serie, multiplied by
+        Returns the next Fibonacci number in the series, multiplied by
         the current configured multiplier, typically `100`, for time
         seconds adjust.
         """
@@ -89,5 +89,5 @@ class FibonacciBackoff(Backoff):
         if self.max_retries > 0:
             self.retries += 1
 
-        # Return next interval according to Fibonacci serie
+        # Return next interval according to Fibonacci series
         return self.interval

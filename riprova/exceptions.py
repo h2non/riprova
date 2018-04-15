@@ -12,7 +12,7 @@ class RetryError(Exception):
 
 class MaxRetriesExceeded(RetryError):
     """
-    Retry error raised when a maximum of retry attemps is exceeded, reported
+    Retry error raised when a maximum of retry attempts is exceeded, reported
     by the backoff strategy being used.
     """
 
