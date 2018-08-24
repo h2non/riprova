@@ -1,4 +1,15 @@
 
+v0.2.7 / 2018-08-24
+-------------------
+
+  * Merge pull request #20 from ffix/forward-exception-instance
+  * Correct linter warnings
+  * Re-raise exception instance instead of new exception with no args
+  * Merge pull request #19 from EdwardBetts/spelling
+  * Correct spelling mistakes.
+  * feat(setup): support Python 3.7
+  * feat(History): add version changes
+
 v0.2.6 / 2018-04-14
 -------------------
 
