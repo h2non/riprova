@@ -221,3 +221,10 @@ def test_retrier_context_manager(MagicMock):
 
     assert retrier.attempts == 3
     assert isinstance(retrier.error, SyntaxError)
+
+
+def test_retrier_context_manager_forward_error_message():
+    with pytest.raises(RuntimeError) as excinfo:
+        with Retrier():
+            raise RuntimeError('Error message here.')
+    assert str(excinfo.value) == 'Error message here.'
