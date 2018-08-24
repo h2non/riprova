@@ -310,5 +310,5 @@ class Retrier(object):
 
     def __exit__(self, exc_type, exc_value, traceback):
         # Forward error, if needed
-        if exc_type:
-            raise exc_type
+        if exc_value:
+            raise exc_value
