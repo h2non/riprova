@@ -10,7 +10,7 @@ pook.get('server.com').times(1).reply(200).json({'hello': 'world'})
 
 # Retry evaluator function used to determine if the operated failed or not
 def evaluator(response):
-    if response != 200:
+    if response.status != 200:
         return Exception('failed request')
     return False
 
