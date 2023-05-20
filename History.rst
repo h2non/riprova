@@ -1,4 +1,10 @@
 
+v0.3.0 / 2023-05-20
+-------------------
+
+  * Deprecate asyncio.corouting
+  * Drop Python 2 and 3.4 support
+
 v0.2.7 / 2018-08-24
 -------------------
 
