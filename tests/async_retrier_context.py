@@ -8,14 +8,13 @@ def test_async_retrier_context_manager(MagicMock, coro, run_coro):
     retrier = AsyncRetrier(timeout=.25, on_retry=on_retry,
                            backoff=ConstantBackoff(interval=.1, retries=5))
 
-    @asyncio.coroutine
-    def run_context():
-        assert (yield from retrier.__aenter__()) is retrier  # noqa
+    async def run_context():
+        assert (await retrier.__aenter__()) is retrier
 
         try:
-            yield from retrier.run(coro(10), 2, 4, foo='bar')  # noqa
+            await retrier.run(coro(10), 2, 4, foo='bar')
         except Exception as error:
-            yield from retrier.__aexit__(None, None, None)  # noqa
+            await retrier.__aexit__(None, None, None)
         else:
             raise AssertionError('must raise exception')
 
