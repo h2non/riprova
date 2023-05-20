@@ -2,7 +2,7 @@
 import time
 import pytest
 from riprova import ConstantBackoff, MaxRetriesExceeded
-from riprova.constants import PY_34
+from riprova.constants import PY_35
 
 try:
     import asyncio
@@ -10,16 +10,13 @@ try:
 except Exception as error:
     asyncio, AsyncRetrier = None, None
 
-# Require Python 3.4+
-python34 = pytest.mark.skipif(not PY_34, reason='requires Python 3.4+')
 
-if PY_34:
+if PY_35:
     @pytest.fixture
     def coro():
         scope = {'calls': 0, 'times': 0}
 
-        @asyncio.coroutine
-        def task(x, y, foo=0):
+        async def task(x, y, foo=0):
             scope['calls'] += 1
             if scope['calls'] < scope['times']:
                 raise RuntimeError('invalid call')
@@ -40,7 +37,7 @@ else:
         pass
 
 
-@python34
+@python35
 def test_async_retrier_defaults():
     retrier = AsyncRetrier()
     assert retrier.error is None
@@ -52,16 +49,12 @@ def test_async_retrier_defaults():
     assert isinstance(retrier.backoff, ConstantBackoff)
 
 
-@python34
 def test_async_retrier_custom():
-    @asyncio.coroutine
-    def sleep(): pass
+    async def sleep(): pass
 
-    @asyncio.coroutine
-    def on_retry(): pass
+    async def on_retry(): pass
 
-    @asyncio.coroutine
-    def evaluator(): pass
+    async def evaluator(): pass
 
     backoff = ConstantBackoff()
     retrier = AsyncRetrier(timeout=1, on_retry=on_retry,
@@ -76,7 +69,6 @@ def test_async_retrier_custom():
     assert retrier.backoff == backoff
 
 
-@python34
 def test_async_retrier_assestion_error():
     with pytest.raises(AssertionError):
         AsyncRetrier(timeout='foo')
@@ -84,7 +76,6 @@ def test_async_retrier_assestion_error():
         AsyncRetrier(timeout=-1)
 
 
-@python34
 def test_async_retrier_run_success(MagicMock, coro):
     on_retry = MagicMock()
     retrier = AsyncRetrier(on_retry=on_retry)
@@ -97,7 +88,6 @@ def test_async_retrier_run_success(MagicMock, coro):
     assert retrier.error is None
 
 
-@python34
 def test_async_retrier_run_valid_retries(MagicMock, coro):
     task = coro(4)
     on_retry = MagicMock()
@@ -110,7 +100,6 @@ def test_async_retrier_run_valid_retries(MagicMock, coro):
     assert retrier.error is None
 
 
-@python34
 def test_async_retrier_evaluator(MagicMock, coro):
     on_retry = MagicMock()
     task = coro(4)
@@ -133,7 +122,6 @@ def test_async_retrier_evaluator(MagicMock, coro):
     assert retrier.error is None
 
 
-@python34
 def test_async_retrier_evaluator_error_default(MagicMock, coro):
     on_retry = MagicMock()
     task = coro(4)
@@ -156,12 +144,10 @@ def test_async_retrier_evaluator_error_default(MagicMock, coro):
     assert isinstance(retrier.error, ImportError)
 
 
-@python34
 def test_async_retrier_cancelled_error(MagicMock, coro):
     on_retry = MagicMock()
 
-    @asyncio.coroutine
-    def coro(x):
+    async def coro(x):
         if on_retry.call_count < x:
             raise ValueError('small number')
         raise asyncio.CancelledError('oops')
@@ -179,7 +165,6 @@ def test_async_retrier_cancelled_error(MagicMock, coro):
     assert retrier.error is not None
 
 
-@python34
 def test_async_retrier_run_max_retries_error(MagicMock, coro):
     on_retry = MagicMock()
     task = coro(10)
@@ -197,7 +182,6 @@ def test_async_retrier_run_max_retries_error(MagicMock, coro):
     assert isinstance(retrier.error, RuntimeError)
 
 
-@python34
 def test_async_retrier_run_max_timeout(MagicMock, coro):
     on_retry = MagicMock()
     task = coro(10)
@@ -216,7 +200,6 @@ def test_async_retrier_run_max_timeout(MagicMock, coro):
     assert isinstance(retrier.error, RuntimeError)
 
 
-@python34
 def test_async_retrier_istimeout():
     assert AsyncRetrier().istimeout(1234) is False
 
@@ -224,7 +207,6 @@ def test_async_retrier_istimeout():
     assert AsyncRetrier(timeout=1).istimeout(now) is True
 
 
-@python34
 def test_async_retrier_context_manager(MagicMock, coro):
     from .async_retrier_context import test_async_retrier_context_manager
     test_async_retrier_context_manager(MagicMock, coro, run_coro)
