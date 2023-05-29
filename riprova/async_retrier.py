@@ -273,7 +273,7 @@ class AsyncRetrier(Retrier):
             loop=self.loop
         )
 
-     async def __aenter__(self):
+    async def __aenter__(self):
         return self
 
     async def __aexit__(self, exc_type, exc_value, traceback):
