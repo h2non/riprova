@@ -1,5 +1,5 @@
-riprova |Build Status| |PyPI| |Coverage Status| |Documentation Status| |Quality| |Versions|
-===========================================================================================
+riprova |PyPI| |Coverage Status| |Documentation Status| |Quality| |Versions|
+============================================================================
 
 ``riprova`` (meaning ``retry`` in Italian) is a small, general-purpose and versatile `Python`_ library
 that provides retry mechanisms with multiple backoff strategies for any sort of failed operations.
@@ -203,8 +203,6 @@ MIT - Tomas Aparicio
 .. _error evaluation: https://github.com/h2non/riprova/blob/master/examples/http_request.py
 .. _asynchronous coroutines: https://github.com/h2non/riprova/blob/master/examples/http_asyncio.py
 
-.. |Build Status| image:: https://travis-ci.org/h2non/riprova.svg?branch=master
-   :target: https://travis-ci.org/h2non/riprova
 .. |PyPI| image:: https://img.shields.io/pypi/v/riprova.svg?maxAge=2592000?style=flat-square
    :target: https://pypi.python.org/pypi/riprova
 .. |Coverage Status| image:: https://coveralls.io/repos/github/h2non/riprova/badge.svg?branch=master
