@@ -3,7 +3,6 @@ import asyncio  # noqa
 from six import raise_from
 from .backoff import Backoff
 from .retrier import Retrier
-from .constants import PY_34
 from .errors import ErrorWhitelist
 from .strategies import ConstantBackoff
 from .exceptions import MaxRetriesExceeded, RetryError

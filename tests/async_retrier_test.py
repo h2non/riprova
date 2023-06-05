@@ -7,7 +7,7 @@ from riprova.constants import PY_35
 try:
     import asyncio
     from riprova import AsyncRetrier
-except Exception as error:
+except Exception:
     asyncio, AsyncRetrier = None, None
 
 
@@ -37,7 +37,6 @@ else:
         pass
 
 
-@python35
 def test_async_retrier_defaults():
     retrier = AsyncRetrier()
     assert retrier.error is None

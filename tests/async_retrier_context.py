@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-import asyncio
 from riprova import AsyncRetrier, ConstantBackoff
 
 
@@ -13,7 +12,7 @@ def test_async_retrier_context_manager(MagicMock, coro, run_coro):
 
         try:
             await retrier.run(coro(10), 2, 4, foo='bar')
-        except Exception as error:
+        except Exception:
             await retrier.__aexit__(None, None, None)
         else:
             raise AssertionError('must raise exception')
