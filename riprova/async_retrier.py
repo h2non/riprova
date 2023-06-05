@@ -128,8 +128,7 @@ class AsyncRetrier(Retrier):
         self.timeout = timeout or None
         # Stores optional evaluator function
         self.evaluator = asyncio.coroutine(evaluator) if evaluator else None
-        # Stores the error evaluator fu
-        nction.
+        # Stores the error evaluator function.
         self.error_evaluator = error_evaluator or self.is_whitelisted_error
         # Stores optional coroutine function to call on before very
         # retry operation. `on_retry` function accepts 2 arguments:
@@ -144,8 +143,7 @@ class AsyncRetrier(Retrier):
                           AsyncRetrier.whitelist or
                           ErrorWhitelist())
 
-    @asyncio.coroutine
-    def _call(self, coro, *args, **kw):
+    async def _call(self, coro, *args, **kw):
         """
         Calls the given coroutine function with the given variadic arguments.
         """
@@ -275,7 +273,7 @@ class AsyncRetrier(Retrier):
             loop=self.loop
         )
 
-     async def __aenter__(self):
+    async def __aenter__(self):
         return self
 
     async def __aexit__(self, exc_type, exc_value, traceback):
