@@ -47,8 +47,8 @@ class AsyncRetrier(Retrier):
             and should return nothing.
         sleep_coro (coroutinefunction): optional coroutine function used to
             sleep. Defaults to `asyncio.sleep`.
-        loop (asyncio.BaseException): event loop to use.
-            Defaults to `asyncio.get_event_loop()`.
+        loop (asyncio.BaseException): Deprecated and no longer used.
+            Will always using `asyncio.get_event_loop()`.
 
     Attributes:
         whitelist (riprova.ErrorWhitelist): default error whitelist instance
@@ -109,16 +109,14 @@ class AsyncRetrier(Retrier):
                  evaluator=None,
                  error_evaluator=None,
                  on_retry=None,
-                 sleep_coro=None,
-                 loop=None):
+                 sleep_coro=None
+                 ):
 
         # Assert input params
         if timeout is not None:
             assert isinstance(timeout, (int, float)), 'timeout must be number'
             assert timeout >= 0, 'timeout cannot be a negative number'
 
-        # Event loop to use
-        self.loop = loop or asyncio.get_event_loop()
         # Stores number of retry attempts
         self.attempts = 0
         # Stores latest error
@@ -268,8 +266,7 @@ class AsyncRetrier(Retrier):
         # If not timeout defined, run the coroutine function
         return await asyncio.wait_for(
             self._run(coro, *args, **kw),
-            self.timeout,
-            loop=self.loop
+            self.timeout
         )
 
     async def __aenter__(self):
